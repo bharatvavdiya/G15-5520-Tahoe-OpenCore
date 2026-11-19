@@ -1,0 +1,6 @@
+# Never change line endings or content of anything in the EFI (configs, kexts, drivers, ACPI).
+EFI/** -text
+# Scripts and docs always use Unix line endings so they run in macOS bash.
+*.sh text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
