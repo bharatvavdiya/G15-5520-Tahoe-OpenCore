@@ -30,6 +30,9 @@ WhateverXe 0.8.2 and 0.8.3, AMFIAnchor 0.1.2 (and `AMFIAnchorInjector.kext` at t
 | XHCI-unsupported | 0.9.2 | https://github.com/RehabMan/OS-X-USB-Inject-All |
 
 The ACPI tables (`SSDT-*.aml`) and ACPI patches were generated for this laptop. They are not generic.
+`SSDT-dGPU-Off.aml` follows Dortania's SSDT-NoHybGfx method
+(https://dortania.github.io/Getting-Started-With-ACPI/Laptops/laptop-disable.html), compiled with ACPICA `iasl`
+from [`ACPI-source/SSDT-dGPU-Off.dsl`](ACPI-source/SSDT-dGPU-Off.dsl).
 
 ## Not included (download from the official source)
 

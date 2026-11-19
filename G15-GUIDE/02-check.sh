@@ -34,6 +34,9 @@ echo "Collecting information (1 to 3 minutes, please wait and do not use the lap
   echo; echo "--- CPU"; sysctl hw.physicalcpu hw.logicalcpu machdep.cpu.thread_count machdep.cpu.brand_string 2>/dev/null
   echo; echo "--- power settings"; pmset -g 2>/dev/null
   echo; echo "--- displays"; system_profiler SPDisplaysDataType
+  echo; echo "--- NVIDIA dGPU seen by macOS (mode D turns it off: want 0 there)"
+  echo "NVIDIA dGPU devices visible: $(ioreg -l -w0 2>/dev/null | grep -c '"vendor-id" = <de100000>')"
+  ioreg -r -n NHG1 -d 1 2>/dev/null | head -3
   echo; echo "--- graphics accelerator objects"; ioreg -r -c IOAccelerator -d 1 2>/dev/null | head -40
   echo; echo "--- WhateverXe display admission (for upstream triage)"; ioreg -lw0 -r -k N97Admission -d1 2>/dev/null | head -60
   echo; echo "--- panic files saved by OpenCore on the USB"; ls -la "$USB"/panic-*.txt 2>/dev/null
@@ -52,4 +55,4 @@ cp "$USB"/panic-*.txt "$DD/" 2>/dev/null
 echo "Saved: $OUT"
 echo "Crash/hang/panic reports copied: $(ls "$DD" | wc -l | tr -d ' ')"
 echo
-grep -E 'MODE:|ProductVersion|InstallStatus|VRAM|Metal|Resolution|UI Looks like' "$OUT"
+grep -E 'MODE:|ProductVersion|InstallStatus|VRAM|Metal|Resolution|UI Looks like|NVIDIA dGPU devices' "$OUT"

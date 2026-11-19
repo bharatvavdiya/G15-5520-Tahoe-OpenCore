@@ -1,85 +1,75 @@
-G15 5520 - Iris Xe graphics - FINAL STEPS  (version 5)
-=======================================================
+G15 5520 - Iris Xe graphics - STEPS  (version 6, 19 Nov evening)
+================================================================
 
-What changed in version 5 (after the two boot hangs):
-  - The CPU topology kext (CpuTopologyRebuild) is now OFF in every mode. Its own README says
-    "May cause random boot failure with verbose (-v) boot", and Hyper-Threading is off in
-    your BIOS, so it had nothing useful to do.
-  - OpenCore now clears NullMoth's self-repair flags at every start.
-  - The next start is MAINTENANCE IN SAFE MODE: macOS loads no add-on kexts at all
-    (no NullMoth, no graphics package), so the cleanup can run on a clean system.
+What the logs showed:
+  - Mode C (WhateverXe 0.8.2) did NOT start the Intel GPU on your cleaned macOS. The
+    driver stopped half way, the screen fell back to the slow 7 MB mode (that is why
+    there was no glass and no smoothness), and the half-started driver then hung the
+    laptop 10 seconds after you unlocked.
+  - Mode A (WhateverXe 0.8.3, the official method) DID start the GPU this afternoon
+    (glass, smooth). It froze 9 seconds after login, at the moment NullMoth's 1401 app
+    started by itself, with NullMoth's own Intel GPU driver still loaded next to Apple's.
+    NullMoth is removed now.
+  - So the next test is A on the clean system. The USB is ALREADY set to A.
 
-Modes on this USB (EFI/OC). Only config.plist is used; the others are ready copies.
-  MAINTENANCE SAFE   WhateverXe off + Safe Mode (no add-on kexts)            <- ACTIVE NOW
-  MAINTENANCE        WhateverXe off. Slow, 7 MB, no glass.
-  C                  Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod (proven Metal 2)
-  A / B / N          WhateverXe 0.8.3 + AMFIAnchor / 0.8.2 + AMFIAnchor / display only
-
-Files in this folder (in macOS: /Volumes/1401/G15-GUIDE)
-  02-check.sh                  collects info + logs + crash reports (changes nothing)
-  03-remove-nullmoth.sh        removes EVERYTHING NullMoth/1401 put in macOS, then
-                               reinstalls WhateverXe Graphics 0.4.4
-  04-switch-to-accelerated.sh  next start = C (default) or A / B / N
-  05-switch-to-maintenance.sh  next start = MAINTENANCE (add "safe" for Safe Mode)
-  06-test-mode.sh              no sleep + media analysis off for tests (undo: add "undo")
-  07-cpu-test.sh               10-minute CPU-only load test (no graphics involved)
-  reports/                     results; Claude reads them from Windows
-On the USB root (for Windows):  G15-SWITCH-MODE.bat  - choose the mode after a hang
-
-Tip: if a command says "No such file", type  bash  and a space, drag the file from
-Finder into Terminal, press Enter. You can copy commands from this file in TextEdit.
+Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS)
+  A                  WhateverXe 0.8.3 + AMFIAnchor (official method)     <- NEXT START
+  D                  A + NVIDIA RTX 3050 switched off in macOS (cooler, more battery)
+  N                  WhateverXe 0.8.3 display only, no acceleration (test)
+  C                  old Nov 17 setup (did not start the GPU on 19 Nov)
+  MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.  (SAFE = also Safe Mode)
 
 
-PART 1 - SAFE MODE (cleanup)
-  1. Plug in your USB mouse.
-  2. F12 -> USB -> OpenCore -> your macOS disk -> Enter. Do NOT select Reset NVRAM.
-     Safe Mode starts slower than normal; text scrolling is normal.
-     At the login screen you should see "Safe Boot" in red at the top right.
-  3. Log in, open only Terminal (Cmd+Space, type Terminal, Enter).
-  4. Remove NullMoth completely (5-10 minutes; do not use the laptop meanwhile):
-         sudo bash /Volumes/1401/G15-GUIDE/03-remove-nullmoth.sh
-     Type your Mac password (nothing shows while typing), Enter, then type YES.
-     It must end with "DONE" or "DONE (part 1)".  If it says "STOP": stop here,
-     boot Windows and tell Claude.
-  5. Turn on test mode:
-         sudo bash /Volumes/1401/G15-GUIDE/06-test-mode.sh
-  6. Next start = normal maintenance:
-         bash /Volumes/1401/G15-GUIDE/05-switch-to-maintenance.sh
-  7. Apple menu > Restart.
-
-
-PART 2 - NORMAL MAINTENANCE + CPU TEST
-  1. F12 -> USB -> your macOS disk. Open only Terminal.
-  2. If step 4 above said "DONE (part 1)", run the cleanup again now (it finishes the
-     graphics package):   sudo bash /Volumes/1401/G15-GUIDE/03-remove-nullmoth.sh
-  3. Run the 10-minute CPU test:
-         bash /Volumes/1401/G15-GUIDE/07-cpu-test.sh
-     Do not use the laptop. Tap Caps Lock once a minute. Slow is normal.
-  4. "PASSED" -> choose mode C:
-         bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh
-     (must print "DONE: next start = C"), then Apple menu > Restart -> PART 3.
-  5. If the start hangs or the test freezes: see IF IT HANGS below and tell Claude.
-
-
-PART 3 - macOS WITH ACCELERATION (mode C)
-  1. F12 -> USB -> your macOS disk. Expect a smooth desktop with glass effects.
-  2. Use it normally but lightly for 20-30 minutes, lid open.
-  3. Then run:
+PART 4 - TEST A  (next start)
+  1. Plug in your USB mouse. F12 -> USB -> OpenCore -> your macOS disk -> Enter.
+     Text scrolls during start (normal). Do NOT select Reset NVRAM.
+  2. Log in, then wait 2 minutes without touching anything.
+  3. Expected: smooth desktop with glass effects.
+  4. Open Terminal (Cmd+Space, type Terminal, Enter) and run:
          sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
-     and look at System Settings > Displays > Refresh Rate (120 Hz?).
-  4. Boot Windows and tell Claude: "check report".
+     The last lines should show the Metal line, VRAM 1536 MB and
+     "UI Looks like: 1920 x 1080 @ 120.00Hz".
+  5. Use it lightly for 20-30 minutes: Finder, Safari, System Settings.
+     Do not open Photos yet. Keep the lid open.
+  6. Run step 4 again, then boot Windows and tell Claude: "A report".
+
+
+PART 5 - TEST D  (only after A stayed fine for 20-30 minutes)
+  1. In Terminal:
+         bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh D
+     It must print "DONE: next start = D". Then Apple menu > Restart.
+  2. After login run 02-check.sh (PART 4 step 4).
+     "NVIDIA dGPU devices visible: 0" = the RTX 3050 is off in macOS.
+  3. Use it 20-30 minutes, then tell Claude: "D report".
+  If D hangs while starting: Windows -> G15-SWITCH-MODE.bat -> 3 (A).
 
 
 IF IT HANGS OR FREEZES (any mode)
-  1. Press Caps Lock: does its light change? Move the USB mouse: does it move?
-     Take a photo of the screen if text is showing.
+  1. Press Caps Lock: does its light change? Move the mouse: does it move?
+     Take a photo if text is showing.
   2. Wait 3 minutes. If it was a crash, the laptop restarts by itself.
   3. Still stuck: hold the power button to turn off.
-  4. F12 -> Windows Boot Manager. In File Explorer open the USB, double-click
-     G15-SWITCH-MODE.bat -> choose 1 (MAINTENANCE in Safe Mode).
-  5. Tell Claude what happened (Claude reads the OpenCore logs on the USB).
+  4. F12 -> Windows Boot Manager. Open the USB in File Explorer, double-click
+     G15-SWITCH-MODE.bat -> choose 2 (MAINTENANCE normal).
+  5. Start macOS (maintenance), open Terminal, run:
+         sudo bash /Volumes/1401/G15-GUIDE/08-freeze-logs.sh
+     Then boot Windows and tell Claude: "check logs".
+
+
+WHAT THIS LAPTOP CAN AND CANNOT DO IN macOS (checked against Apple and WhateverXe docs)
+  - Iris Xe: Metal 2 acceleration, the level Apple's Iris Xe driver provides.
+    Metal 3 and Metal 4 are not possible: Metal 4 needs Apple silicon (M1 or newer),
+    and Apple never made a Metal 3 driver for Iris Xe.
+  - RTX 3050: no macOS driver exists for RTX 20/30/40 cards. Best is to switch it off
+    in macOS (mode D); it keeps working fully in Windows. The HDMI port is wired to
+    the RTX, so HDMI will not work in macOS.
+  - CPU: all 12 cores run with Apple's power management. 16 threads (Hyper-Threading
+    on) needs the CPU topology kext that caused the random start hangs, so it stays
+    off for now.
+  - WhateverXe lists your exact chip (80-EU Alder Lake-H) and its built-in screen as
+    "expected to work, not yet tested on hardware".
 
 
 DO NOT
-  - Do not open or press anything in the 1401 app (it rewrites the EFI on this USB).
+  - Do not open the 1401 app and do not install anything from NullMoth.
   - Do not Reset NVRAM, do not update to macOS 27, do not close the lid during tests.
