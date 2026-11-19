@@ -2277,11 +2277,6 @@
 	<dict>
 		<key>Add</key>
 		<dict>
-			<key>PciRoot(0x0)/Pci(0x1,0x0)/Pci(0x0,0x0)</key>
-			<dict>
-				<key>acpi-wake-type</key>
-				<integer>1</integer>
-			</dict>
 			<key>PciRoot(0x0)/Pci(0x1c,0x0)/Pci(0x0,0x0)</key>
 			<dict>
 				<key>built-in</key>
@@ -3232,7 +3227,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-v debug=0x100 keepsyms=1 -allow3d -disablegfxfirmware -igfxdvmt -vi2c-force-polling ctrsmt=full -ibtcompatbeta revpatch=sbvmm -nvoff</string>
+				<string>-v keepsyms=1 -allow3d -disablegfxfirmware -igfxdvmt -vi2c-force-polling ctrsmt=full -ibtcompatbeta -nvoff</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==
@@ -3471,7 +3466,7 @@
 			</dict>
 			<dict>
 				<key>Arguments</key>
-				<string></string>
+				<string>--preserve-boot</string>
 				<key>Comment</key>
 				<string></string>
 				<key>Enabled</key>

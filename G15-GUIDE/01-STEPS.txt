@@ -1,0 +1,75 @@
+G15 5520 - Iris Xe graphics - FINAL STEPS  (version 3)
+=======================================================
+
+Modes on this USB (EFI/OC). Only config.plist is used; the others are ready copies.
+  MAINTENANCE  WhateverXe off. Slow, 7 MB, no glass, but no graphics hangs.   <- ACTIVE NOW
+  C            Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod (proven Metal 2)
+  A            WhateverXe 0.8.3 + AMFIAnchor
+  B            WhateverXe 0.8.2 + AMFIAnchor
+  N            WhateverXe 0.8.3 display only, no GPU acceleration (diagnostic)
+
+Files in this folder (in macOS: /Volumes/1401/G15-GUIDE)
+  02-check.sh                  collects info + logs + crash reports (changes nothing)
+  03-remove-nullmoth.sh        removes EVERYTHING NullMoth/1401 put in macOS, then
+                               reinstalls WhateverXe Graphics 0.4.4
+  04-switch-to-accelerated.sh  next start = C (default) or A / B / N
+  05-switch-to-maintenance.sh  next start = MAINTENANCE
+  06-test-mode.sh              no sleep + media analysis off for tests (undo: add "undo")
+  reports/                     results; Claude reads them from Windows
+On the USB root (for Windows):  G15-SWITCH-MODE.bat  - choose the mode after a freeze
+
+Tip: if a command says "No such file", type  bash  and a space, drag the file from
+Finder into Terminal, press Enter. You can copy commands from this file in TextEdit.
+
+
+PART 1 - WINDOWS (1 minute, recommended)
+  Control Panel > Power Options > "Choose what the power buttons do" >
+  "Change settings that are currently unavailable" > untick "Turn on fast startup" > Save.
+  (Fast Startup leaves the shared disk half-hibernated and changes firmware flags.)
+
+
+PART 2 - macOS IN MAINTENANCE MODE (slow is normal here)
+  1. Plug in your USB mouse.
+  2. F12 -> USB -> OpenCore -> your macOS disk -> Enter. Do NOT select Reset NVRAM.
+  3. Open only Terminal (Cmd+Space, type Terminal, Enter). Open nothing else.
+  4. Remove NullMoth completely (5-10 minutes; do not use the laptop meanwhile):
+         sudo bash /Volumes/1401/G15-GUIDE/03-remove-nullmoth.sh
+     Type your Mac password (nothing shows while typing), Enter, then type YES.
+     It must end with "DONE".  If it says "STOP" or "macOS is older than 26.7":
+     stop here, boot Windows and tell Claude.
+  5. Turn on test mode:
+         sudo bash /Volumes/1401/G15-GUIDE/06-test-mode.sh
+  6. Choose the accelerated mode C for the next start:
+         bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh
+     Must print "DONE: next start = C".
+  7. Apple menu > Restart.
+
+
+PART 3 - macOS WITH ACCELERATION (mode C)
+  1. F12 -> USB -> your macOS disk. Expect a smooth desktop with glass effects.
+  2. Use it normally but lightly for 20-30 minutes, lid open.
+  3. Then run:
+         sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
+     and look at System Settings > Displays > Refresh Rate (120 Hz?).
+  4. Optional, only if C was stable: test 0.8.3 the same way:
+         bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh A
+     Restart, use 20-30 minutes, run 02-check.sh again.
+  5. Boot Windows and tell Claude: "check report".
+
+
+IF IT FREEZES (any mode)
+  1. Press Caps Lock: does its light change? Move the USB mouse: does it move?
+     Remember the answers (they tell a trackpad stall from a real freeze).
+  2. Wait 3 minutes. If it was a crash, the laptop now restarts by itself and
+     saves a crash report.
+  3. Still frozen: hold the power button to turn off.
+  4. F12 -> Windows Boot Manager. In File Explorer open the USB and double-click
+     G15-SWITCH-MODE.bat -> choose 1 (MAINTENANCE).
+     (Safe Mode is NOT a reliable way out: WhateverXe still loads in Safe Mode.)
+  5. Boot macOS (maintenance), run:  sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
+  6. Boot Windows and tell Claude what happened + "check report".
+
+
+DO NOT
+  - Do not open or press anything in the 1401 app (it rewrites the EFI on this USB).
+  - Do not Reset NVRAM, do not update to macOS 27, do not close the lid during tests.

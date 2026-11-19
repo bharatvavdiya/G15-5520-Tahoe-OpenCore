@@ -4,3 +4,4 @@ EFI/** -text
 *.sh text eol=lf
 *.txt text eol=lf
 *.md text eol=lf
+*.bat text eol=crlf
