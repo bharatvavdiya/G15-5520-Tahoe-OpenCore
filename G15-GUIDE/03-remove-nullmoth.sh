@@ -24,7 +24,9 @@ OUT="$R/nullmoth-removal-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT" || { echo "STOP: cannot write $OUT. Nothing was changed."; exit 1; }
 exec > >(tee -a "$OUT/log.txt") 2>&1
 VER=$(sw_vers -productVersion)
+RERUN=0
 echo "macOS $VER   report folder: $OUT"
+[ "$(sysctl -n kern.safeboot 2>/dev/null)" = 1 ] && echo "Safe Mode: yes"
 case " $(nvram boot-args 2>/dev/null | cut -f2-) " in
   *" -wexoff "*) echo "Mode: MAINTENANCE (good)";;
   *) echo "NOTE: not in maintenance mode. Close all other apps before continuing.";;
@@ -248,7 +250,7 @@ if [ "$H" != "$PKG_SHA" ]; then
 elif nice -n 10 installer -pkg "$PKG" -target /; then
   REBUILT=1
 else
-  echo "NOTE: the installer refused (macOS $VER; the package needs 26.7 to <27). Rebuilding the collection directly."
+  echo "NOTE: the package installer did not finish (macOS $VER). Rebuilding the collection directly."
   set --
   for k in /Library/Extensions/*.kext; do [ -d "$k" ] && set -- "$@" -p "$k"; done
   if [ "$#" -eq 0 ]; then
@@ -264,11 +266,21 @@ else
          -A "$W/AuxiliaryKernelExtensions.kc" --no-authentication \
        && chmod 0644 "$W/AuxiliaryKernelExtensions.kc" && mv -f "$W/AuxiliaryKernelExtensions.kc" "$KC"; then
       REBUILT=1
-    else echo "STOP: the kernel collection could not be rebuilt. Do NOT restart; boot Windows and tell Claude."; fi
+    else
+      echo "NOTE: the kernel collection could not be rebuilt in this mode (this can happen in Safe Mode)."
+      if [ -f "$KC" ]; then
+        mv -f "$KC" "$OUT/old-AuxiliaryKernelExtensions.kc" && echo "The old collection (with NullMoth inside) was moved into the report folder, so the next start cannot load NullMoth."
+      fi
+      REBUILT=1; RERUN=1
+    fi
     rm -rf "${W:?}"
   fi
-  echo "IMPORTANT: Iris Xe acceleration needs macOS 26.7 or newer. Update first: System Settings > General >"
-  echo "           Software Update > macOS Tahoe 26.7.x only (never macOS 27), then install the package from the USB."
+  RERUN=1
+  MAJ=${VER%%.*}; MIN=${VER#*.}; MIN=${MIN%%.*}
+  if [ "$MAJ" = 26 ] && [ "${MIN:-0}" -lt 7 ]; then
+    echo "IMPORTANT: Iris Xe acceleration needs macOS 26.7 or newer. Update first: System Settings > General >"
+    echo "           Software Update > macOS Tahoe 26.7.x only (never macOS 27), then run this script again."
+  fi
 fi
 
 echo
@@ -286,7 +298,12 @@ if [ "$REBUILT" = 1 ]; then
   echo "Kernel collection graphics drivers:"; kmutil inspect -a x86_64 -A "$KC" 2>/dev/null | grep -i 'TGL'
   pkgutil --pkgs | grep -i whateverxe
   echo
-  echo "DONE. Next: bash $DIR/04-switch-to-accelerated.sh   then restart (F12 -> USB -> macOS)."
+  if [ "${RERUN:-0}" = 1 ]; then
+    echo "DONE (part 1). NullMoth is removed; the graphics package still has to be installed."
+    echo "After the restart (normal maintenance mode) run this script again:  sudo bash $DIR/03-remove-nullmoth.sh"
+  else
+    echo "DONE. NullMoth is removed and WhateverXe Graphics is installed."
+  fi
   echo "Report: $OUT"
 else
   exit 1

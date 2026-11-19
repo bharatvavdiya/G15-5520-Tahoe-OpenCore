@@ -1,84 +1,83 @@
-G15 5520 - Iris Xe graphics - FINAL STEPS  (version 4)
+G15 5520 - Iris Xe graphics - FINAL STEPS  (version 5)
 =======================================================
 
+What changed in version 5 (after the two boot hangs):
+  - The CPU topology kext (CpuTopologyRebuild) is now OFF in every mode. Its own README says
+    "May cause random boot failure with verbose (-v) boot", and Hyper-Threading is off in
+    your BIOS, so it had nothing useful to do.
+  - OpenCore now clears NullMoth's self-repair flags at every start.
+  - The next start is MAINTENANCE IN SAFE MODE: macOS loads no add-on kexts at all
+    (no NullMoth, no graphics package), so the cleanup can run on a clean system.
+
 Modes on this USB (EFI/OC). Only config.plist is used; the others are ready copies.
-  MAINTENANCE  WhateverXe off. Slow, 7 MB, no glass, but no graphics hangs.   <- ACTIVE NOW
-  C            Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod (proven Metal 2)
-  A            WhateverXe 0.8.3 + AMFIAnchor
-  B            WhateverXe 0.8.2 + AMFIAnchor
-  N            WhateverXe 0.8.3 display only, no GPU acceleration (diagnostic)
-  noctr        MAINTENANCE without the CPU topology kext (only if the CPU test froze)
+  MAINTENANCE SAFE   WhateverXe off + Safe Mode (no add-on kexts)            <- ACTIVE NOW
+  MAINTENANCE        WhateverXe off. Slow, 7 MB, no glass.
+  C                  Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod (proven Metal 2)
+  A / B / N          WhateverXe 0.8.3 + AMFIAnchor / 0.8.2 + AMFIAnchor / display only
 
 Files in this folder (in macOS: /Volumes/1401/G15-GUIDE)
   02-check.sh                  collects info + logs + crash reports (changes nothing)
   03-remove-nullmoth.sh        removes EVERYTHING NullMoth/1401 put in macOS, then
                                reinstalls WhateverXe Graphics 0.4.4
   04-switch-to-accelerated.sh  next start = C (default) or A / B / N
-  05-switch-to-maintenance.sh  next start = MAINTENANCE (add "noctr" for the test variant)
+  05-switch-to-maintenance.sh  next start = MAINTENANCE (add "safe" for Safe Mode)
   06-test-mode.sh              no sleep + media analysis off for tests (undo: add "undo")
   07-cpu-test.sh               10-minute CPU-only load test (no graphics involved)
   reports/                     results; Claude reads them from Windows
-On the USB root (for Windows):  G15-SWITCH-MODE.bat  - choose the mode after a freeze
+On the USB root (for Windows):  G15-SWITCH-MODE.bat  - choose the mode after a hang
 
 Tip: if a command says "No such file", type  bash  and a space, drag the file from
 Finder into Terminal, press Enter. You can copy commands from this file in TextEdit.
 
 
-PART 1 - WINDOWS (1 minute, recommended)
-  Control Panel > Power Options > "Choose what the power buttons do" >
-  "Change settings that are currently unavailable" > untick "Turn on fast startup" > Save.
-
-
-PART 2 - macOS IN MAINTENANCE MODE (slow is normal here)
+PART 1 - SAFE MODE (cleanup)
   1. Plug in your USB mouse.
   2. F12 -> USB -> OpenCore -> your macOS disk -> Enter. Do NOT select Reset NVRAM.
-  3. Open only Terminal (Cmd+Space, type Terminal, Enter). Open nothing else.
+     Safe Mode starts slower than normal; text scrolling is normal.
+     At the login screen you should see "Safe Boot" in red at the top right.
+  3. Log in, open only Terminal (Cmd+Space, type Terminal, Enter).
   4. Remove NullMoth completely (5-10 minutes; do not use the laptop meanwhile):
          sudo bash /Volumes/1401/G15-GUIDE/03-remove-nullmoth.sh
      Type your Mac password (nothing shows while typing), Enter, then type YES.
-     It must end with "DONE".  If it says "STOP" or "macOS is older than 26.7":
-     stop here, boot Windows and tell Claude.
+     It must end with "DONE" or "DONE (part 1)".  If it says "STOP": stop here,
+     boot Windows and tell Claude.
   5. Turn on test mode:
          sudo bash /Volumes/1401/G15-GUIDE/06-test-mode.sh
-  6. Apple menu > Restart (it starts in maintenance mode again - that is intended).
+  6. Next start = normal maintenance:
+         bash /Volumes/1401/G15-GUIDE/05-switch-to-maintenance.sh
+  7. Apple menu > Restart.
 
 
-PART 3 - CPU TEST (maintenance mode, after the restart)
+PART 2 - NORMAL MAINTENANCE + CPU TEST
   1. F12 -> USB -> your macOS disk. Open only Terminal.
-  2. Run the 10-minute test:
+  2. If step 4 above said "DONE (part 1)", run the cleanup again now (it finishes the
+     graphics package):   sudo bash /Volumes/1401/G15-GUIDE/03-remove-nullmoth.sh
+  3. Run the 10-minute CPU test:
          bash /Volumes/1401/G15-GUIDE/07-cpu-test.sh
-     Do not use the laptop. Tap Caps Lock once a minute. It is slow, that is normal.
-  3. "PASSED"  -> choose mode C for the next start:
+     Do not use the laptop. Tap Caps Lock once a minute. Slow is normal.
+  4. "PASSED" -> choose mode C:
          bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh
-     (must print "DONE: next start = C"), then Apple menu > Restart and go to PART 4.
-  4. It FROZE (Caps Lock dead for 3 minutes) -> hold the power button ->
-     F12 -> Windows Boot Manager -> on the USB double-click G15-SWITCH-MODE.bat ->
-     choose 6 -> boot macOS -> run the CPU test again -> tell Claude both results.
+     (must print "DONE: next start = C"), then Apple menu > Restart -> PART 3.
+  5. If the start hangs or the test freezes: see IF IT HANGS below and tell Claude.
 
 
-PART 4 - macOS WITH ACCELERATION (mode C)
+PART 3 - macOS WITH ACCELERATION (mode C)
   1. F12 -> USB -> your macOS disk. Expect a smooth desktop with glass effects.
   2. Use it normally but lightly for 20-30 minutes, lid open.
   3. Then run:
          sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
      and look at System Settings > Displays > Refresh Rate (120 Hz?).
-  4. Optional, only if C was stable: test 0.8.3 the same way:
-         bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh A
-     Restart, use 20-30 minutes, run 02-check.sh again.
-  5. Boot Windows and tell Claude: "check report".
+  4. Boot Windows and tell Claude: "check report".
 
 
-IF IT FREEZES (any mode)
+IF IT HANGS OR FREEZES (any mode)
   1. Press Caps Lock: does its light change? Move the USB mouse: does it move?
-     Remember the answers (they tell a trackpad stall from a real freeze).
-  2. Wait 3 minutes. If it was a crash, the laptop now restarts by itself and
-     saves a crash report.
-  3. Still frozen: hold the power button to turn off.
-  4. F12 -> Windows Boot Manager. In File Explorer open the USB and double-click
-     G15-SWITCH-MODE.bat -> choose 1 (MAINTENANCE).
-     (Safe Mode is NOT a reliable way out: WhateverXe still loads in Safe Mode.)
-  5. Boot macOS (maintenance), run:  sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
-  6. Boot Windows and tell Claude what happened + "check report".
+     Take a photo of the screen if text is showing.
+  2. Wait 3 minutes. If it was a crash, the laptop restarts by itself.
+  3. Still stuck: hold the power button to turn off.
+  4. F12 -> Windows Boot Manager. In File Explorer open the USB, double-click
+     G15-SWITCH-MODE.bat -> choose 1 (MAINTENANCE in Safe Mode).
+  5. Tell Claude what happened (Claude reads the OpenCore logs on the USB).
 
 
 DO NOT

@@ -2419,7 +2419,7 @@
 				<key>Comment</key>
 				<string></string>
 				<key>Enabled</key>
-				<true/>
+				<false/>
 				<key>ExecutablePath</key>
 				<string>Contents/MacOS/CpuTopologyRebuild</string>
 				<key>MaxKernel</key>
@@ -2931,7 +2931,7 @@
 				<key>Count</key>
 				<integer>1</integer>
 				<key>Enabled</key>
-				<true/>
+				<false/>
 				<key>Find</key>
 				<data>
 				QYuGlAEAAA==
@@ -2967,7 +2967,7 @@
 				<key>Count</key>
 				<integer>1</integer>
 				<key>Enabled</key>
-				<true/>
+				<false/>
 				<key>Find</key>
 				<data>
 				i4iUAQAA
@@ -3003,7 +3003,7 @@
 				<key>Count</key>
 				<integer>1</integer>
 				<key>Enabled</key>
-				<true/>
+				<false/>
 				<key>Find</key>
 				<data>
 				i4iQAQAA
@@ -3227,7 +3227,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-v keepsyms=1 -allow3d -disablegfxfirmware -igfxdvmt -vi2c-force-polling ctrsmt=full -ibtcompatbeta -nvoff</string>
+				<string>-v keepsyms=1 -allow3d -disablegfxfirmware -igfxdvmt -vi2c-force-polling -ibtcompatbeta -nvoff</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==
@@ -3256,6 +3256,10 @@
 				<string>bluetoothExternalDongleFailed</string>
 				<string>bluetoothInternalControllerInfo</string>
 				<string>boot-args</string>
+				<string>nullmoth-remove</string>
+				<string>nullmoth-nv-starts</string>
+				<string>nullmoth-nv-ok</string>
+				<string>nullmoth-ws-loop</string>
 			</array>
 		</dict>
 		<key>LegacyOverwrite</key>
