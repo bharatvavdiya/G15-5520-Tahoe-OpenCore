@@ -16,10 +16,12 @@ echo   2  C            - Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod (proven)
 echo   3  A            - WhateverXe 0.8.3 + AMFIAnchor
 echo   4  B            - WhateverXe 0.8.2 + AMFIAnchor
 echo   5  N            - WhateverXe 0.8.3 display only, no GPU acceleration (test)
+echo   6  MAINTENANCE without the CPU topology kext (only if the CPU test froze)
 echo   0  cancel
 echo.
-choice /c 123450 /n /m "Type a number: "
-if errorlevel 6 goto cancel
+choice /c 1234560 /n /m "Type a number: "
+if errorlevel 7 goto cancel
+if errorlevel 6 goto pickX
 if errorlevel 5 goto pickN
 if errorlevel 4 goto pickB
 if errorlevel 3 goto pickA
@@ -29,6 +31,10 @@ if errorlevel 1 goto pickM
 echo Cancelled. Nothing was changed.
 pause
 exit /b 0
+:pickX
+set "SRC=config-maintenance-noctr.plist"
+set "NAME=MAINTENANCE without the CPU topology kext"
+goto docopy
 :pickN
 set "SRC=config-accel-noaccel.plist"
 set "NAME=N (display only, no GPU acceleration)"

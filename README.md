@@ -48,6 +48,7 @@ does this for you.
 | `config-accel.plist` (A) | 0.8.3 | AMFIAnchor + injector, AMFI on | Official WhateverXe 0.8.3 setup |
 | `config-accel-082.plist` (B) | 0.8.2 | AMFIAnchor + injector, AMFI on | Fallback |
 | `config-accel-noaccel.plist` (N) | 0.8.3 with `-wex-noaccel` | AMFIAnchor | Diagnostic: display path without GPU acceleration |
+| `config-maintenance-noctr.plist` | off (`-wexoff`) | AMFIAnchor | Diagnostic: maintenance without CpuTopologyRebuild, its HT patches and `ctrsmt=full` ([WhateverXe #42](https://github.com/b00t0x/WhateverXe/issues/42)) |
 
 All configs:
 
@@ -87,8 +88,9 @@ Paths in the scripts assume the USB is mounted as `/Volumes/1401`; the scripts a
 | `02-check.sh` | Collects version, kexts, display, logs and crash/GPU-restart reports into `reports/`. Changes nothing |
 | `03-remove-nullmoth.sh` | Removes all NullMoth/1401 parts: services, kexts, Metal/Vulkan, NVRAM flags and the app. Then reinstalls WhateverXe Graphics 0.4.4 to rebuild the kernel collection |
 | `04-switch-to-accelerated.sh` | Next boot = C (default), or A / B / N |
-| `05-switch-to-maintenance.sh` | Next boot = maintenance |
+| `05-switch-to-maintenance.sh` | Next boot = maintenance (`noctr` for the variant without CpuTopologyRebuild) |
 | `06-test-mode.sh` | Turns off sleep and display sleep, and Apple's media-analysis agents, for testing. `undo` reverts |
+| `07-cpu-test.sh` | 10-minute CPU-only load test in maintenance mode. Logs every 30 s to `reports/` to catch a platform hang |
 | `G15-SWITCH-MODE.bat` | The same mode switch from Windows, to recover after a freeze |
 
 ## Freeze notes

@@ -1,4 +1,4 @@
-G15 5520 - Iris Xe graphics - FINAL STEPS  (version 3)
+G15 5520 - Iris Xe graphics - FINAL STEPS  (version 4)
 =======================================================
 
 Modes on this USB (EFI/OC). Only config.plist is used; the others are ready copies.
@@ -7,14 +7,16 @@ Modes on this USB (EFI/OC). Only config.plist is used; the others are ready copi
   A            WhateverXe 0.8.3 + AMFIAnchor
   B            WhateverXe 0.8.2 + AMFIAnchor
   N            WhateverXe 0.8.3 display only, no GPU acceleration (diagnostic)
+  noctr        MAINTENANCE without the CPU topology kext (only if the CPU test froze)
 
 Files in this folder (in macOS: /Volumes/1401/G15-GUIDE)
   02-check.sh                  collects info + logs + crash reports (changes nothing)
   03-remove-nullmoth.sh        removes EVERYTHING NullMoth/1401 put in macOS, then
                                reinstalls WhateverXe Graphics 0.4.4
   04-switch-to-accelerated.sh  next start = C (default) or A / B / N
-  05-switch-to-maintenance.sh  next start = MAINTENANCE
+  05-switch-to-maintenance.sh  next start = MAINTENANCE (add "noctr" for the test variant)
   06-test-mode.sh              no sleep + media analysis off for tests (undo: add "undo")
+  07-cpu-test.sh               10-minute CPU-only load test (no graphics involved)
   reports/                     results; Claude reads them from Windows
 On the USB root (for Windows):  G15-SWITCH-MODE.bat  - choose the mode after a freeze
 
@@ -25,7 +27,6 @@ Finder into Terminal, press Enter. You can copy commands from this file in TextE
 PART 1 - WINDOWS (1 minute, recommended)
   Control Panel > Power Options > "Choose what the power buttons do" >
   "Change settings that are currently unavailable" > untick "Turn on fast startup" > Save.
-  (Fast Startup leaves the shared disk half-hibernated and changes firmware flags.)
 
 
 PART 2 - macOS IN MAINTENANCE MODE (slow is normal here)
@@ -39,13 +40,23 @@ PART 2 - macOS IN MAINTENANCE MODE (slow is normal here)
      stop here, boot Windows and tell Claude.
   5. Turn on test mode:
          sudo bash /Volumes/1401/G15-GUIDE/06-test-mode.sh
-  6. Choose the accelerated mode C for the next start:
+  6. Apple menu > Restart (it starts in maintenance mode again - that is intended).
+
+
+PART 3 - CPU TEST (maintenance mode, after the restart)
+  1. F12 -> USB -> your macOS disk. Open only Terminal.
+  2. Run the 10-minute test:
+         bash /Volumes/1401/G15-GUIDE/07-cpu-test.sh
+     Do not use the laptop. Tap Caps Lock once a minute. It is slow, that is normal.
+  3. "PASSED"  -> choose mode C for the next start:
          bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh
-     Must print "DONE: next start = C".
-  7. Apple menu > Restart.
+     (must print "DONE: next start = C"), then Apple menu > Restart and go to PART 4.
+  4. It FROZE (Caps Lock dead for 3 minutes) -> hold the power button ->
+     F12 -> Windows Boot Manager -> on the USB double-click G15-SWITCH-MODE.bat ->
+     choose 6 -> boot macOS -> run the CPU test again -> tell Claude both results.
 
 
-PART 3 - macOS WITH ACCELERATION (mode C)
+PART 4 - macOS WITH ACCELERATION (mode C)
   1. F12 -> USB -> your macOS disk. Expect a smooth desktop with glass effects.
   2. Use it normally but lightly for 20-30 minutes, lid open.
   3. Then run:
