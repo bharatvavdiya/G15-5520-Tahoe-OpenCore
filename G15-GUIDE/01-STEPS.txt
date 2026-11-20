@@ -9,9 +9,11 @@ RESULT SO FAR
     the old 0.8.2 setup (mode C). None of that is on the system any more.
   - The USB stick had file errors (and Windows logged 7 USB controller errors). Everything on
     it is backed up on the PC. Step 1 below repairs it.
-  - Icons that first show placeholders are most likely a one-time warm-up after the cleanup
-    (new graphics caches + Spotlight indexing). The steps below measure it before changing
-    anything.
+  - A2 test (20 Nov): stable, including the 10-minute CPU test with graphics on. The icon
+    placeholders were a one-time cache build (confirmed). Bluetooth works.
+  - No sound: macOS 26 removed Apple's audio driver, so the built-in speakers have no driver.
+    YouTube's "An error occurred" in Safari is most likely caused by that: Safari's video
+    player needs a sound output. PART 7 tests this.
 
 Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS)
   A                  WhateverXe 0.8.3 + AMFIAnchor (official method)     <- NEXT START
@@ -21,7 +23,27 @@ Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS
   MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.  (SAFE = also Safe Mode)
 
 
-PART 6 - LONGER TEST OF A  (next start)
+PART 7 - VIDEO AND SOUND  (next start, mode A)
+  1. Start A and log in. Give macOS a sound output: pair Bluetooth headphones or a speaker
+     (System Settings > Bluetooth), or plug in a USB headset / USB sound adapter. Then
+     System Settings > Sound > Output: select it.
+  2. Safari > Quit Safari, open Safari again, play the same YouTube video.
+     Note: does it play now, or the same error?
+  3. Only if it still shows the error: open /Volumes/1401/G15-GUIDE/10-youtube-test.txt
+     in TextEdit and follow it.
+  4. Smoother scrolling (normal macOS settings, easy to undo):
+     System Settings > Accessibility > Display > Reduce transparency: ON
+     System Settings > Wallpaper: choose a still picture (not an Aerial video)
+  5. Watch videos in a window or YouTube's theater mode, not full screen, and turn off
+     System Settings > General > AirDrop & Continuity > AirPlay Receiver
+     (both are known WindowServer crash triggers with this graphics driver).
+  6. Optional, Google Chrome for video: type chrome://flags, search "Skia Graphite",
+     set it to Disabled, click Relaunch.
+  7. Apple menu > Shut Down. Start Windows and tell Claude: "video report"
+     (did Safari play with sound selected? does scrolling feel better?).
+
+
+PART 6 - LONGER TEST OF A  (done 20 Nov)
   In Windows first:
   1. Open the USB in File Explorer, double-click G15-CHECK-USB.cmd, click Yes.
      It must end with "RESULT: ..." and "Next macOS start uses: A".

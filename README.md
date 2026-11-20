@@ -32,8 +32,9 @@ OpenCore EFI for the **Dell G15 5520** running **macOS Tahoe (26.x)**, with Inte
 | Brightness | Worked together with acceleration (config C) |
 | 120 Hz internal panel | Works: 1920 x 1080 @ 120.00 Hz (config A) |
 | CPU | 12 cores (Hyper-Threading off), Apple power management (XCPM) active; 10-minute full-load test passed |
-| Audio | Built-in speakers not possible for now: AppleALC needs AppleHDA, which macOS 26 removed ([AppleALC](https://github.com/acidanthera/AppleALC), [Dortania Tahoe notes](https://dortania.github.io/OpenCore-Install-Guide/extras/tahoe.html)). VoodooHDA is untested. Use USB or Bluetooth audio |
+| Audio | Built-in speakers not possible for now: AppleALC needs AppleHDA, which macOS 26 removed ([AppleALC](https://github.com/acidanthera/AppleALC), [Dortania Tahoe notes](https://dortania.github.io/OpenCore-Install-Guide/extras/tahoe.html)). Use a class-compliant USB headset/DAC or Bluetooth audio. Planned as a separate test: VoodooHDA 3.7.1 (`VoodooHDA_BL`) injected by OpenCore, which leaves the AuxKC untouched. The built-in SST microphone and HDMI audio cannot work |
 | Bluetooth | Firmware loads in normal boots (bluetoothd only loops in Safe Mode, where the kexts don't load); pairing not tested yet |
+| Video | Hardware H.264 and HEVC decode; this driver stack has no VP9 or AV1 decoder ([#133](https://github.com/b00t0x/WhateverXe/issues/133)). YouTube in Safari showed "An error occurred" on 20 Nov; the most likely cause is that Safari needs a sound output and the built-in audio has no driver (being tested). Chrome with Skia Graphite disabled is the fallback ([#130](https://github.com/b00t0x/WhateverXe/issues/130)). Avoid full-screen video and the AirPlay Receiver ([#129](https://github.com/b00t0x/WhateverXe/issues/129)) |
 | Wi-Fi | itlwm included, not tested (needs the HeliPort app) |
 | Sleep | The firmware has no S3 (modern standby only); keep sleep off for now |
 | NVIDIA RTX 3050 | No macOS driver exists for RTX 20/30/40 cards ([Dortania](https://dortania.github.io/GPU-Buyers-Guide/modern-gpus/nvidia-gpu.html)). Config D turns it off in macOS (not yet tested) |
@@ -115,6 +116,8 @@ Paths in the scripts assume the USB is mounted as `/Volumes/1401`; the scripts a
 | `07-cpu-test.sh` | 10-minute CPU load test (works in every mode; the steps run it in mode A). Logs every 30 s to `reports/` to catch a platform hang |
 | `08-freeze-logs.sh` | After a freeze: saves the kernel, WindowServer and kext-manager logs of the last hours (default 12, because the macOS clock can start 5:30 ahead after Windows), the loaded kexts and the AuxKC contents to `reports/`. Changes nothing |
 | `09-perf-check.sh` | Performance check, run with `sudo`: `quick`, `watch` (samples while you open an app) or no word for the full check (adds battery, `powermetrics` and a 10 s CPU load). Writes `reports/perf-*.txt`. Changes nothing |
+| `10-video-log.sh` | Read-only video check, run without `sudo` right after a video error: sound devices macOS sees, recent WebKit / video decoder / WindowServer crash reports and the media log lines of the last 10 minutes |
+| `10-youtube-test.txt` | Steps plus one line to paste into Safari's JavaScript console: prints which codecs Safari offers, YouTube's player error and the clock offset. Only reads |
 | `G15-SWITCH-MODE.bat` | The same mode switch from Windows, to recover after a freeze |
 | `G15-CHECK-USB.cmd` | Windows: runs `chkdsk /f /x` on the USB labelled `1401` (it needs that label) and shows which config the next start uses. The steps expect it at the USB root |
 
