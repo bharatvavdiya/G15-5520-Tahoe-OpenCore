@@ -43,6 +43,31 @@ PART 7 - VIDEO AND SOUND  (next start, mode A)
      (did Safari play with sound selected? does scrolling feel better?).
 
 
+PART 8 - WI-FI WITH HELIPORT  (after PART 7; mode A, nothing changes in the EFI)
+  Your EFI already loads the official Intel Wi-Fi driver (itlwm); only its app is missing.
+  Wi-Fi then shows up in macOS as an extra "Ethernet", and you join networks from the
+  HeliPort icon in the menu bar. No AirDrop or Handoff with this method.
+  1. Finder > 1401 (the USB) > G15-GUIDE > downloads > open HeliPort-1.5.0.dmg.
+     Drag HeliPort onto Applications, then eject the dmg.
+  2. Open HeliPort from Applications. If macOS blocks it: System Settings > Privacy &
+     Security > Open Anyway.
+  3. Unplug the Ethernet cable. Click the HeliPort icon in the menu bar > Turn Wi-Fi On >
+     choose your network (best: 5 GHz, visible name, WPA2) > password > Join >
+     Always Allow.
+  4. In Terminal (must print an IP address such as 192.168.x.x):
+         ipconfig getifaddr en0
+     Then open a few websites. If there is no IP: System Settings > Network > the new
+     "Ethernet" service for en0 must be set to Using DHCP.
+  5. Start HeliPort automatically: System Settings > General > Login Items & Extensions >
+     + > Applications > HeliPort > Add.
+  6. Check graphics and Bluetooth are unchanged:
+         sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
+  7. Apple menu > Shut Down. Start Windows and tell Claude: "wifi report".
+  Do NOT use any tool that "root patches" macOS (OpenCore Legacy Patcher, OCLP-Mod,
+  kgp AirportItlwm-Tahoe): it rebuilds the driver collection that holds the Iris Xe
+  graphics and can remove the graphics driver at the next macOS update.
+
+
 PART 6 - LONGER TEST OF A  (done 20 Nov)
   In Windows first:
   1. Open the USB in File Explorer, double-click G15-CHECK-USB.cmd, click Yes.

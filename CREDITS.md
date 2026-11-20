@@ -24,7 +24,7 @@ WhateverXe 0.8.2 and 0.8.3, AMFIAnchor 0.1.2 (and `AMFIAnchorInjector.kext` at t
 | VoodooPS2Controller | 2.3.8 | https://github.com/acidanthera/VoodooPS2 |
 | VoodooI2C + VoodooI2CHID | 2.9.1 / 1.0 | https://github.com/VoodooI2C/VoodooI2C |
 | itlwm | 2.3.0, **not the official binary**: SHA-256 `e4fd02a6…5bc`, while the official `itlwm_v2.3.0_stable.kext.zip` binary is `63952b0b…690b`. It can be swapped for the official one | https://github.com/OpenIntelWireless/itlwm |
-| IntelBluetoothFirmware + IntelBTPatcher | 2.5.0 | https://github.com/OpenIntelWireless/IntelBluetoothFirmware |
+| IntelBluetoothFirmware + IntelBTPatcher | 2.5.0, from the community fork that continues the project (official OpenIntelWireless releases stop at v2.4.0, 2024) | https://github.com/lshbluesky/IntelBluetoothFirmware (fork of https://github.com/OpenIntelWireless/IntelBluetoothFirmware) |
 | BlueToolFixup | 2.7.3 | https://github.com/acidanthera/BrcmPatchRAM |
 | RealtekRTL8111 | 2.4.2 | https://github.com/Mieze/RTL8111_driver_for_OS_X |
 | USBToolBox + UTBDefault | (release build) / 1.0 | https://github.com/USBToolBox/kext |
