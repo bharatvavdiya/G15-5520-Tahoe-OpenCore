@@ -17,7 +17,7 @@ OpenCore EFI for the **Dell G15 5520** running **macOS Tahoe (26.x)**, with Inte
 | dGPU | NVIDIA RTX 3050 Laptop `10DE:25E2`, only wired to HDMI, not used by macOS |
 | Storage | Samsung PM9B1 NVMe (dual boot with Windows 11) |
 | Ethernet | Realtek RTL8111 |
-| Audio | Realtek ALC3254 on Intel HDA `8086:51C8` |
+| Audio | Realtek ALC236 (`10EC:0236`, subsystem `1028:0B64`) on Intel `8086:51C8` (Smart Sound mode); the built-in mic is an Intel SST digital mic |
 | SMBIOS | MacBookPro16,2 |
 
 ## Status
@@ -27,13 +27,14 @@ OpenCore EFI for the **Dell G15 5520** running **macOS Tahoe (26.x)**, with Inte
 | Boot, online-recovery install | Works |
 | Ethernet | Works (used for the install) |
 | Keyboard, trackpad | Work |
-| Iris Xe acceleration | Metal 2 / 1536 MB reached on 26.7.3 (17 Nov, config C). On 19 Nov, after NullMoth was removed, config C no longer started the GPU, while config A (WhateverXe 0.8.3) had started it earlier that day. A is being retested on the clean system |
+| Iris Xe acceleration | **Works with config A** on the cleaned system (19 Nov, 26.7.3): Metal 2, 1536 MB, no GPU restarts (`recoveryCount` 0) in a ~26-minute session that ended normally. Longer tests (CPU/GPU load, video, display sleep) are still pending. Config C (0.8.2) no longer starts the GPU |
 | Metal level | Metal 2, the level the Iris Xe driver provides. Metal 3 and Metal 4 are not possible: Metal 4 needs Apple silicon ([Apple, WWDC25](https://developer.apple.com/videos/play/wwdc2025/205/)), and Apple's [feature-set tables](https://developer.apple.com/metal/feature-sets) list Metal 3 only for UHD 630 / Iris Plus among Intel GPUs |
 | Brightness | Worked together with acceleration (config C) |
-| 120 Hz internal panel | Not verified in macOS yet |
+| 120 Hz internal panel | Works: 1920 x 1080 @ 120.00 Hz (config A) |
 | CPU | 12 cores (Hyper-Threading off), Apple power management (XCPM) active; 10-minute full-load test passed |
-| Audio | Not working yet (no AppleALC) |
-| Wi-Fi, Bluetooth | itlwm and IntelBluetoothFirmware included, not verified |
+| Audio | Built-in speakers not possible for now: AppleALC needs AppleHDA, which macOS 26 removed ([AppleALC](https://github.com/acidanthera/AppleALC), [Dortania Tahoe notes](https://dortania.github.io/OpenCore-Install-Guide/extras/tahoe.html)). VoodooHDA is untested. Use USB or Bluetooth audio |
+| Bluetooth | Firmware loads in normal boots (bluetoothd only loops in Safe Mode, where the kexts don't load); pairing not tested yet |
+| Wi-Fi | itlwm included, not tested (needs the HeliPort app) |
 | Sleep | The firmware has no S3 (modern standby only); keep sleep off for now |
 | NVIDIA RTX 3050 | No macOS driver exists for RTX 20/30/40 cards ([Dortania](https://dortania.github.io/GPU-Buyers-Guide/modern-gpus/nvidia-gpu.html)). Config D turns it off in macOS (not yet tested) |
 | HDMI | Wired to the RTX 3050, so not usable in macOS |
@@ -59,8 +60,9 @@ All configs:
 
 - **SIP:** `csr-active-config` = `03080000` (0x803), as WhateverXe requires.
 - **boot-args:** forced at every boot (listed in NVRAM > Delete).
-- **Crashes:** the accelerated configs leave out `debug=0x100`, so a kernel panic reboots and OpenCore saves the
-  panic log, instead of the screen just freezing.
+- **Crashes:** the accelerated configs leave out `debug=0x100`, so a kernel panic reboots instead of the screen just
+  freezing. After a panic, macOS keeps a `Kernel-*.panic` report and the next OpenCore log shows `AAPL: #[EB|P:MPI] Y`.
+  OpenCore's own `panic-*.txt` stayed empty on this laptop even after a real panic.
 - **Reset NVRAM:** runs with `--preserve-boot`, so it keeps Windows Boot Manager.
 - **CpuTopologyRebuild:** off, together with its three "force HT" patches and `ctrsmt=full`. Its README lists
   "May cause random boot failure with verbose (`-v`) boot", and Hyper-Threading is off in this BIOS (12 threads),
@@ -70,7 +72,9 @@ All configs:
 - **`-nvoff`:** parks the NullMoth NVIDIA driver if one is installed, and does nothing otherwise.
 - **`-v`:** verbose boot is on while testing.
 
-Every component is an unmodified upstream release. The OpenCore files are identical to Dortania build
+The components are unmodified upstream builds (tagged releases or Dortania build-repo CI builds), with two
+exceptions listed in [CREDITS.md](CREDITS.md): `XHCI-unsupported.kext` is a community variant that adds Alder Lake's
+`8086:51ED`, and `itlwm.kext` is not the official v2.3.0 binary. The OpenCore files are identical to Dortania build
 `OpenCorePkg-ebea824` (1.0.9), and all configs pass that build's `ocvalidate`.
 
 ### `SSDT-dGPU-Off.aml` (config D only)
@@ -107,10 +111,12 @@ Paths in the scripts assume the USB is mounted as `/Volumes/1401`; the scripts a
 | `03-remove-nullmoth.sh` | Removes all NullMoth/1401 parts: services, kexts, Metal/Vulkan, NVRAM flags and the app. Then reinstalls WhateverXe Graphics 0.4.4 to rebuild the kernel collection |
 | `04-switch-to-accelerated.sh` | Next boot = A (default), or D / N / C / B |
 | `05-switch-to-maintenance.sh` | Next boot = maintenance (`safe` for Safe Mode, `ctr` for the old CpuTopologyRebuild variant) |
-| `06-test-mode.sh` | Turns off sleep and display sleep, and Apple's media-analysis agents, for testing. `undo` reverts |
-| `07-cpu-test.sh` | 10-minute CPU-only load test in maintenance mode. Logs every 30 s to `reports/` to catch a platform hang |
-| `08-freeze-logs.sh` | After a freeze: saves the kernel, WindowServer and kext-manager logs of the last hours (default 4), the loaded kexts and the AuxKC contents to `reports/`. Changes nothing |
+| `06-test-mode.sh` | Turns off sleep and display sleep, and Apple's media-analysis agents. These are the safe daily settings for this laptop, so there is deliberately no `undo` |
+| `07-cpu-test.sh` | 10-minute CPU load test (works in every mode; the steps run it in mode A). Logs every 30 s to `reports/` to catch a platform hang |
+| `08-freeze-logs.sh` | After a freeze: saves the kernel, WindowServer and kext-manager logs of the last hours (default 12, because the macOS clock can start 5:30 ahead after Windows), the loaded kexts and the AuxKC contents to `reports/`. Changes nothing |
+| `09-perf-check.sh` | Performance check, run with `sudo`: `quick`, `watch` (samples while you open an app) or no word for the full check (adds battery, `powermetrics` and a 10 s CPU load). Writes `reports/perf-*.txt`. Changes nothing |
 | `G15-SWITCH-MODE.bat` | The same mode switch from Windows, to recover after a freeze |
+| `G15-CHECK-USB.cmd` | Windows: runs `chkdsk /f /x` on the USB labelled `1401` (it needs that label) and shows which config the next start uses. The steps expect it at the USB root |
 
 ## Freeze notes
 
@@ -121,14 +127,23 @@ This is what is known, not a final verdict:
 - **GPU hangs on Gen12 Iris Xe** have been reported shortly after login, triggered by Apple's media-analysis
   compute work: [WhateverXe #163](https://github.com/b00t0x/WhateverXe/issues/163) and
   [#171](https://github.com/b00t0x/WhateverXe/issues/171).
-- **Turning the display off and on** can hang a `46A6` laptop:
-  [WhateverXe #117](https://github.com/b00t0x/WhateverXe/issues/117).
+- **Turning the display off and on** hung other `46A6` laptops on older WhateverXe builds (comments in
+  [#117](https://github.com/b00t0x/WhateverXe/issues/117) and [#90](https://github.com/b00t0x/WhateverXe/issues/90)).
+  0.8.3 claims better eDP handling after display sleep, but it is untested on this panel, so display sleep stays off.
 - **An identical i5-12500H / `46A6` setup** also reported freezes:
   [WhateverXe #42](https://github.com/b00t0x/WhateverXe/issues/42).
 - **Untested hardware:** the WhateverXe README lists 80-EU Alder Lake-H graphics and Alder Lake-H internal
   screens as "expected to work, not yet tested on hardware".
 
 What the logs showed on 19 Nov (macOS 26.7.3):
+
+- **The only real kernel panic (14:29, NullMoth-era setup):** `/usr/sbin/sysctl` hit a general-protection fault
+  in `strcmp` while XNU looked up a sysctl name that pointed into an unloaded Aux kernel collection kext. NullMoth's
+  NVIDIA/Intel kexts register `debug.*` sysctls without unregistering them, so they are the most likely owners
+  (strong inference, not proof). With `debug=0x100` the Mac halted instead of rebooting, so it looked like a freeze.
+  It cannot recur in A or D: NullMoth is gone and `debug=0x100` is no longer used.
+- **Config A on the cleaned system (21:44):** Metal 2, 1536 MB, 120 Hz, `recoveryCount` 0, no GPU restart, link or
+  backlight errors, and an orderly shutdown after about 26 minutes.
 
 - **Config C (0.8.2), cleaned system:** the Intel driver stopped right after `Detecting Pre-Si/Si Mode`. It never
   published `IntelAccelerator`, and the screen fell back to the boot framebuffer (7 MB). The laptop then hung
@@ -149,6 +164,6 @@ Log messages that are harmless on this laptop:
 
 ## Credits
 
-See [CREDITS.md](CREDITS.md). Every binary is an unmodified upstream release.
+See [CREDITS.md](CREDITS.md). The binaries are unmodified upstream builds, except the two noted there.
 
 Provided as is, without warranty. Running macOS on non-Apple hardware may be against Apple's license terms.

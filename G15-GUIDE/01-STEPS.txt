@@ -1,75 +1,100 @@
-G15 5520 - Iris Xe graphics - STEPS  (version 6, 19 Nov evening)
-================================================================
+G15 5520 - Iris Xe graphics - STEPS  (version 7, 20 Nov)
+=========================================================
 
-What the logs showed:
-  - Mode C (WhateverXe 0.8.2) did NOT start the Intel GPU on your cleaned macOS. The
-    driver stopped half way, the screen fell back to the slow 7 MB mode (that is why
-    there was no glass and no smoothness), and the half-started driver then hung the
-    laptop 10 seconds after you unlocked.
-  - Mode A (WhateverXe 0.8.3, the official method) DID start the GPU this afternoon
-    (glass, smooth). It froze 9 seconds after login, at the moment NullMoth's 1401 app
-    started by itself, with NullMoth's own Intel GPU driver still loaded next to Apple's.
-    NullMoth is removed now.
-  - So the next test is A on the clean system. The USB is ALREADY set to A.
+RESULT SO FAR
+  - Mode A WORKS (19 Nov): Iris Xe, Metal 2, 1536 MB, 1920 x 1080 @ 120 Hz, no GPU errors,
+    and the session ended normally after 26 minutes. Metal 2 is the maximum for Iris Xe.
+  - The old freezes are explained: one was a real crash caused by NullMoth's drivers (a
+    NullMoth boot setting made it look like a freeze); the others came from NullMoth or from
+    the old 0.8.2 setup (mode C). None of that is on the system any more.
+  - The USB stick had file errors (and Windows logged 7 USB controller errors). Everything on
+    it is backed up on the PC. Step 1 below repairs it.
+  - Icons that first show placeholders are most likely a one-time warm-up after the cleanup
+    (new graphics caches + Spotlight indexing). The steps below measure it before changing
+    anything.
 
 Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS)
   A                  WhateverXe 0.8.3 + AMFIAnchor (official method)     <- NEXT START
-  D                  A + NVIDIA RTX 3050 switched off in macOS (cooler, more battery)
+  D                  A + NVIDIA RTX 3050 switched off in macOS (test later)
   N                  WhateverXe 0.8.3 display only, no acceleration (test)
   C                  old Nov 17 setup (did not start the GPU on 19 Nov)
   MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.  (SAFE = also Safe Mode)
 
 
-PART 4 - TEST A  (next start)
-  1. Plug in your USB mouse. F12 -> USB -> OpenCore -> your macOS disk -> Enter.
-     Text scrolls during start (normal). Do NOT select Reset NVRAM.
-  2. Log in, then wait 2 minutes without touching anything.
-  3. Expected: smooth desktop with glass effects.
-  4. Open Terminal (Cmd+Space, type Terminal, Enter) and run:
+PART 6 - LONGER TEST OF A  (next start)
+  In Windows first:
+  1. Open the USB in File Explorer, double-click G15-CHECK-USB.cmd, click Yes.
+     It must end with "RESULT: ..." and "Next macOS start uses: A".
+  In macOS (Ethernet cable and charger plugged in, USB mouse, lid open):
+  2. F12 -> USB -> OpenCore -> your macOS disk. Do NOT select Reset NVRAM.
+  3. Log in, open only Terminal, wait 5 minutes without touching anything.
+  4. Measure (2 minutes, do not touch the laptop):
+         sudo bash /Volumes/1401/G15-GUIDE/09-perf-check.sh quick
+  5. Measure while icons load:
+         sudo bash /Volumes/1401/G15-GUIDE/09-perf-check.sh watch
+     When it says NOW: open System Settings and click 3-4 items. When it says Saved:
+     quit System Settings (Cmd+Q), open it again, and note: were the icons instant now?
+  6. Stop Spotlight from writing to the USB, then check (must say "Indexing disabled"):
+         sudo mdutil -i off /Volumes/1401
+         mdutil -s /Volumes/1401
+  7. System Settings > General > Software Update > (i) next to Automatic Updates:
+     turn OFF "Download new updates when available" and "Install macOS updates".
+  8. Use the Mac for about an hour: Finder, Safari, a 10-minute 1080p YouTube video, and
+     try the brightness keys once. If only the video stalls, wait 60 seconds.
+  9. Quit Safari (Cmd+Q). CPU test with graphics on (10 minutes; do not use the laptop,
+     only tap Caps Lock once a minute and watch its light):
+         bash /Volumes/1401/G15-GUIDE/07-cpu-test.sh
+ 10. Check the disk (only reads, usually 1-5 minutes). Close other apps first. While it
+     runs, apps may pause; that is normal, not a freeze: do not touch the laptop and wait
+     up to 15 minutes for the last line "Finished file system verification ...". A few
+     lines above it, it must say "appears to be OK" and "exit code is 0":
+         sudo diskutil verifyVolume /System/Volumes/Data
+ 11. Full check:
          sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
-     The last lines should show the Metal line, VRAM 1536 MB and
-     "UI Looks like: 1920 x 1080 @ 120.00Hz".
-  5. Use it lightly for 20-30 minutes: Finder, Safari, System Settings.
-     Do not open Photos yet. Keep the lid open.
-  6. Run step 4 again, then boot Windows and tell Claude: "A report".
+ 12. Apple menu > Restart (not the power button). Start A again, log in, open only
+     Terminal, wait 5 minutes, then repeat steps 4 and 5.
+ 13. Apple menu > Shut Down. Start Windows and tell Claude: "A2 report".
 
 
-PART 5 - TEST D  (only after A stayed fine for 20-30 minutes)
-  1. In Terminal:
-         bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh D
-     It must print "DONE: next start = D". Then Apple menu > Restart.
-  2. After login run 02-check.sh (PART 4 step 4).
-     "NVIDIA dGPU devices visible: 0" = the RTX 3050 is off in macOS.
-  3. Use it 20-30 minutes, then tell Claude: "D report".
-  If D hangs while starting: Windows -> G15-SWITCH-MODE.bat -> 3 (A).
+PART 5 - TEST D  (only when Claude says so)
+  1. In macOS:  bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh D
+     It must print "DONE: next start = D". Then Apple menu > Restart and choose
+     F12 -> USB -> OpenCore -> your macOS disk.
+  2. After login run:
+         sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
+     "NVIDIA dGPU devices visible: 0" = the RTX is off.
+  3. Use it 20-30 minutes, run the same sudo command again, then Apple menu > Shut Down.
+  4. Start Windows, check Device Manager > Display adapters still shows the RTX 3050,
+     then tell Claude: "D report".
 
 
 IF IT HANGS OR FREEZES (any mode)
   1. Press Caps Lock: does its light change? Move the mouse: does it move?
      Take a photo if text is showing.
-  2. Wait 3 minutes. If it was a crash, the laptop restarts by itself.
+  2. Wait 3 minutes. If the laptop restarts by itself, that was a crash: go to step 4.
   3. Still stuck: hold the power button to turn off.
-  4. F12 -> Windows Boot Manager. Open the USB in File Explorer, double-click
-     G15-SWITCH-MODE.bat -> choose 2 (MAINTENANCE normal).
+  4. F12 -> Windows Boot Manager. On the USB, double-click G15-CHECK-USB.cmd (click Yes),
+     then G15-SWITCH-MODE.bat -> choose 2 (MAINTENANCE normal).
   5. Start macOS (maintenance), open Terminal, run:
          sudo bash /Volumes/1401/G15-GUIDE/08-freeze-logs.sh
-     Then boot Windows and tell Claude: "check logs".
+     Then start Windows and tell Claude: "check logs".
 
 
 WHAT THIS LAPTOP CAN AND CANNOT DO IN macOS (checked against Apple and WhateverXe docs)
-  - Iris Xe: Metal 2 acceleration, the level Apple's Iris Xe driver provides.
-    Metal 3 and Metal 4 are not possible: Metal 4 needs Apple silicon (M1 or newer),
-    and Apple never made a Metal 3 driver for Iris Xe.
-  - RTX 3050: no macOS driver exists for RTX 20/30/40 cards. Best is to switch it off
-    in macOS (mode D); it keeps working fully in Windows. The HDMI port is wired to
-    the RTX, so HDMI will not work in macOS.
-  - CPU: all 12 cores run with Apple's power management. 16 threads (Hyper-Threading
-    on) needs the CPU topology kext that caused the random start hangs, so it stays
-    off for now.
-  - WhateverXe lists your exact chip (80-EU Alder Lake-H) and its built-in screen as
-    "expected to work, not yet tested on hardware".
+  - Iris Xe: Metal 2, the level Apple's Iris Xe driver provides. Metal 4 needs Apple
+    silicon (M1 or newer); Apple never made a Metal 3 driver for Iris Xe.
+  - RTX 3050: no macOS driver exists for RTX 20/30/40 cards. Mode D switches it off in
+    macOS; it keeps working fully in Windows. HDMI is wired to it, so no HDMI in macOS.
+  - CPU: all 12 cores run with Apple's power management. Hyper-Threading stays off: with
+    it on, this exact CPU is reported to hang at start, and it gives no speed-up for the UI.
+  - Speakers: macOS 26 removed the Apple audio driver that AppleALC needs, so the built-in
+    speakers cannot work for now. Use USB or Bluetooth audio.
+  - Sleep: the firmware has no S3 sleep, so keep the Mac awake and use Shut Down.
 
 
 DO NOT
-  - Do not open the 1401 app and do not install anything from NullMoth.
-  - Do not Reset NVRAM, do not update to macOS 27, do not close the lid during tests.
+  - No Apple menu > Sleep, no closing the lid, no "Put Display to Sleep" hot corner.
+  - No Photos app, no Live Text on pictures (GPU hang triggers reported on Iris Xe).
+  - No cleaner apps, no icon-cache tricks, no Safe Mode "to clear caches".
+  - Do not open the 1401 app and do not install anything from NullMoth or AppleALC.
+  - Do not Reset NVRAM, do not install macOS updates, never macOS 27.
