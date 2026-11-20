@@ -12,18 +12,18 @@ RESULT SO FAR
   - A2 test (20 Nov): stable, including the 10-minute CPU test with graphics on. The icon
     placeholders were a one-time cache build (confirmed). Bluetooth works.
   - No sound: macOS 26 removed Apple's audio driver, so the built-in speakers have no driver.
-    YouTube's "An error occurred" in Safari is most likely caused by that: Safari's video
-    player needs a sound output. PART 7 tests this.
+    CONFIRMED (20 Nov): YouTube's "An error occurred" in Safari happens when macOS has no
+    sound output. With a Bluetooth soundbar selected, YouTube plays. Bluetooth audio works.
 
 Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS)
-  A                  WhateverXe 0.8.3 + AMFIAnchor (official method)     <- NEXT START
-  D                  A + NVIDIA RTX 3050 switched off in macOS (test later)
+  A                  WhateverXe 0.8.3 + AMFIAnchor (official method, works)
+  D                  A + NVIDIA RTX 3050 switched off in macOS            <- NEXT START
   N                  WhateverXe 0.8.3 display only, no acceleration (test)
   C                  old Nov 17 setup (did not start the GPU on 19 Nov)
   MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.  (SAFE = also Safe Mode)
 
 
-PART 7 - VIDEO AND SOUND  (next start, mode A)
+PART 7 - VIDEO AND SOUND  (done 20 Nov: with a sound output selected, Safari YouTube plays)
   1. Start A and log in. Give macOS a sound output: pair Bluetooth headphones or a speaker
      (System Settings > Bluetooth), or plug in a USB headset / USB sound adapter. Then
      System Settings > Sound > Output: select it.
@@ -43,7 +43,7 @@ PART 7 - VIDEO AND SOUND  (next start, mode A)
      (did Safari play with sound selected? does scrolling feel better?).
 
 
-PART 8 - WI-FI WITH HELIPORT  (after PART 7; mode A, nothing changes in the EFI)
+PART 8 - WI-FI WITH HELIPORT  (skipped: Ethernet is used; kept here for later)
   Your EFI already loads the official Intel Wi-Fi driver (itlwm); only its app is missing.
   Wi-Fi then shows up in macOS as an extra "Ethernet", and you join networks from the
   HeliPort icon in the menu bar. No AirDrop or Handoff with this method.
@@ -103,16 +103,21 @@ PART 6 - LONGER TEST OF A  (done 20 Nov)
  13. Apple menu > Shut Down. Start Windows and tell Claude: "A2 report".
 
 
-PART 5 - TEST D  (only when Claude says so)
-  1. In macOS:  bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh D
-     It must print "DONE: next start = D". Then Apple menu > Restart and choose
-     F12 -> USB -> OpenCore -> your macOS disk.
-  2. After login run:
+PART 5 - TEST D  (NEXT START: NVIDIA RTX 3050 switched off in macOS)
+  The USB is already set to D. In the BIOS, keep graphics on Hybrid (not NVIDIA-only).
+  1. In Windows first: double-click G15-CHECK-USB.cmd on the USB, click Yes. It must end
+     with "Next macOS start uses: D".
+  2. F12 -> USB -> OpenCore -> your macOS disk. Log in and select your soundbar as the
+     sound output (System Settings > Sound > Output).
+  3. Run:
          sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
-     "NVIDIA dGPU devices visible: 0" = the RTX is off.
-  3. Use it 20-30 minutes, run the same sudo command again, then Apple menu > Shut Down.
-  4. Start Windows, check Device Manager > Display adapters still shows the RTX 3050,
-     then tell Claude: "D report".
+     Want: "NVIDIA dGPU devices visible: 0" (the RTX is off), still Metal 2 and 1536 MB.
+  4. Use it 20-30 minutes (YouTube with the soundbar is fine), then run the same command
+     again.
+  5. Apple menu > Shut Down. Start Windows: Device Manager > Display adapters must still
+     show the RTX 3050. Then tell Claude: "D report".
+  If D does not start or freezes: Windows > G15-CHECK-USB.cmd > G15-SWITCH-MODE.bat >
+  choose 3 (A), and tell Claude. Please leave the opencore-*.txt files on the USB.
 
 
 IF IT HANGS OR FREEZES (any mode)
