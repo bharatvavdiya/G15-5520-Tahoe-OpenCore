@@ -134,7 +134,8 @@ PART 9 - SMOOTHER DESKTOP  (same session as PART 5, before you shut down)
      "Other".
   5. Apple menu > Log Out, then log in again (WindowServer starts fresh).
   6. Measure AFTER: the same command and the same actions as step 1.
-  7. Note how scrolling and window moves feel, then do PART 10, then PART 5 step 5.
+  7. Note how scrolling and window moves feel, then do PART 10 and PART 11, then PART 5
+     step 5.
   The remaining stutter is a known driver limit: two fixes (WhateverXe #130 and #147)
   are accepted by the developer but not released yet. Claude will update WhateverXe and
   WhateverXe Graphics together when an official release ships.
@@ -151,6 +152,17 @@ PART 10 - FRAME-RATE TEST  (same session, after PART 9; decides whether our own
   2. Safari: File > Open File > the same file, the same two tests.
   3. Tell Claude the numbers. About 120 Hz = no driver stall on this laptop (no custom
      build needed). About 10-20 Hz in Chrome = the stall that a custom build could fix.
+
+
+PART 11 - NVIDIA LAB: SPACE CHECK  (same session, after PART 10; only reads, 1 minute)
+  Plan: a second, separate macOS on the internal disk for the NVIDIA driver, booted only
+  with BIOS Hybrid OFF and its own USB mode. Your working macOS stays untouched.
+  This step only measures free space and IDs. Nothing is created yet.
+  1. In Terminal (without sudo):
+         bash /Volumes/1401/G15-GUIDE/12-lab-check.sh
+  2. It ends with "Saved: ...". Continue with PART 5 step 5 (Shut Down).
+  Do NOT create volumes, download installers or install NullMoth yet: Claude prepares
+  those steps after seeing the space numbers.
 
 
 IF IT HANGS OR FREEZES (any mode)

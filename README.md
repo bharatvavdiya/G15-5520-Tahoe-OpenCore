@@ -119,6 +119,7 @@ Paths in the scripts assume the USB is mounted as `/Volumes/1401`; the scripts a
 | `10-video-log.sh` | Read-only video check, run without `sudo` right after a video error: sound devices macOS sees, recent WebKit / video decoder / WindowServer crash reports and the media log lines of the last 10 minutes |
 | `10-youtube-test.txt` | Steps plus one line to paste into Safari's JavaScript console: prints which codecs Safari offers, YouTube's player error and the clock offset. Only reads |
 | `11-frame-test.html` | Local frame-rate test from [WhateverXe #130](https://github.com/b00t0x/WhateverXe/issues/130): canvas/WebGL Hz in Chrome and Safari, to see whether the 100 ms GPU completion stall happens on this laptop. No network, changes nothing |
+| `12-lab-check.sh` | Read-only: APFS free space, this install's volume-group IDs and the macOS installers Apple offers, to plan a separate second macOS (NVIDIA lab). Run without `sudo` |
 | `G15-SWITCH-MODE.bat` | The same mode switch from Windows, to recover after a freeze |
 | `G15-CHECK-USB.cmd` | Windows: runs `chkdsk /f /x` on the USB labelled `1401` (it needs that label) and shows which config the next start uses. The steps expect it at the USB root |
 
