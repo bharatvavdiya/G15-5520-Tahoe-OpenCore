@@ -1,0 +1,41 @@
+<!-- G15 5520 frame-rate test. Source: the requestAnimationFrame cadence test posted in WhateverXe issue #130
+     (https://github.com/b00t0x/WhateverXe/issues/130). Local only: no network, changes nothing. -->
+<!doctype html>
+<!-- requestAnimationFrame cadence test. Open in Chrome (default flags, then again with --disable-features=SkiaGraphite),
+     click a mode, wait 15 s. Reports average Hz, median/p95/p99/max frame interval and the number of intervals > 25 ms.
+     Modes: idle (empty page), canvas (2D fillRect per frame), webgl (clear per frame). -->
+<meta charset="utf-8"><title>rAF cadence test</title>
+<body style="margin:0;background:#123;color:#eee;font:14px monospace">
+<canvas id="c" width="1920" height="1080" style="position:fixed;inset:0;width:100vw;height:100vh"></canvas>
+<pre id="o" style="position:fixed;left:8px;top:8px;margin:0;background:#000a;padding:6px"></pre>
+<script>
+const c = document.getElementById('c'), o = document.getElementById('o');
+const SECONDS = 15;
+let mode = 'idle', g = null, n = 0;
+function draw() {
+  n++;
+  if (mode === 'canvas') { g.fillStyle = 'hsl(' + (n * 3 % 360) + ',70%,50%)'; g.fillRect((n * 7) % 1800, (n * 5) % 1000, 300, 300); }
+  else if (mode === 'webgl') { g.clearColor((n % 60) / 60, 0.2, 0.4, 1); g.clear(g.COLOR_BUFFER_BIT); }
+  requestAnimationFrame(draw);
+}
+function measure() {
+  const d = []; let last = performance.now(); const t0 = last;
+  function f(t) {
+    d.push(t - last); last = t;
+    if (t - t0 < SECONDS * 1000) { requestAnimationFrame(f); return; }
+    d.shift(); const s = [...d].sort((a, b) => a - b), q = p => s[Math.floor(s.length * p)];
+    const hz = 1000 / (d.reduce((a, b) => a + b, 0) / d.length);
+    o.textContent = `mode=${mode}  ${hz.toFixed(1)} Hz  median ${q(.5).toFixed(2)} ms  p95 ${q(.95).toFixed(2)}  p99 ${q(.99).toFixed(2)}  max ${s[s.length-1].toFixed(2)}  >25 ms: ${s.filter(x => x > 25).length}\n(visibility: ${document.visibilityState}; keep the tab in the foreground)`;
+  }
+  requestAnimationFrame(f);
+}
+const m = new URLSearchParams(location.search).get('mode');
+if (m) {
+  mode = m;
+  g = m === 'webgl' ? c.getContext('webgl') : m === 'canvas' ? c.getContext('2d') : null;
+  o.textContent = 'measuring ' + m + ' for ' + SECONDS + ' s...';
+  draw(); setTimeout(measure, 1500);
+} else {
+  o.innerHTML = '<a href="?mode=idle" style="color:#8cf">idle</a>  <a href="?mode=canvas" style="color:#8cf">canvas</a>  <a href="?mode=webgl" style="color:#8cf">webgl</a>';
+}
+</script>
