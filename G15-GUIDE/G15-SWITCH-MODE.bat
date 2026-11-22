@@ -17,10 +17,14 @@ echo   3  A  - WhateverXe 0.8.3 + AMFIAnchor (official method, RECOMMENDED)
 echo   4  D  - A + NVIDIA RTX 3050 turned off in macOS (test after A works)
 echo   5  N  - WhateverXe 0.8.3 display only, no GPU acceleration (test)
 echo   6  C  - old Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod
+echo   7  TEST 7 - A with the CCS-off test build (PART 14 only, when Claude says so)
+echo   8  TEST 8 - D with the CCS-off test build (PART 14 only, when Claude says so)
 echo   0  cancel
 echo.
-choice /c 1234560 /n /m "Type a number: "
-if errorlevel 7 goto cancel
+choice /c 123456780 /n /m "Type a number: "
+if errorlevel 9 goto cancel
+if errorlevel 8 goto pick8
+if errorlevel 7 goto pick7
 if errorlevel 6 goto pick6
 if errorlevel 5 goto pick5
 if errorlevel 4 goto pick4
@@ -55,6 +59,17 @@ goto docopy
 set "SRC=config-accel-nov17.plist"
 set "NAME=C (old Nov 17 setup)"
 goto docopy
+:pick7
+set "SRC=config-accel-noccs.plist"
+set "NAME=TEST 7 (A + CCS off test build)"
+goto needkext
+:pick8
+set "SRC=config-accel-dgpuoff-noccs.plist"
+set "NAME=TEST 8 (D + CCS off test build)"
+goto needkext
+:needkext
+if not exist "%OC%\Kexts\WhateverXe-noccs.kext\Contents\MacOS\WhateverXe" goto nokext
+goto docopy
 :docopy
 rem No ( ) blocks here: mode names contain brackets, which would end such a block early.
 if not exist "%OC%\%SRC%" goto notfound
@@ -66,6 +81,10 @@ pause
 exit /b 0
 :copyfail
 echo STOP: the copy failed - ask Claude.
+pause
+exit /b 1
+:nokext
+echo STOP: the CCS-off test kext EFI\OC\Kexts\WhateverXe-noccs.kext is missing. Nothing was changed - ask Claude.
 pause
 exit /b 1
 :notfound

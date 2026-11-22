@@ -1,7 +1,8 @@
 # Credits and sources
 
 The binaries in `EFI/` are unmodified upstream builds (tagged releases or Dortania build-repo CI builds), except
-`itlwm.kext` and `XHCI-unsupported.kext` (see the table). Licenses are those of each upstream project; see the links.
+`itlwm.kext`, `XHCI-unsupported.kext` and the test build `WhateverXe-noccs.kext` (see the table). Licenses are those
+of each upstream project; see the links.
 
 Verified by hash against the official GitHub releases on 2026-11-19:
 WhateverXe 0.8.2 and 0.8.3, AMFIAnchor 0.1.2 (and `AMFIAnchorInjector.kext` at tag 0.1.2), and AMFIPass 1.4.1 Mod.
@@ -13,6 +14,7 @@ WhateverXe 0.8.2 and 0.8.3, AMFIAnchor 0.1.2 (and `AMFIAnchorInjector.kext` at t
 | Lilu | 1.7.3 | https://github.com/acidanthera/Lilu |
 | WhateverXe (`WhateverXe.kext`) | 0.8.3 | https://github.com/b00t0x/WhateverXe |
 | WhateverXe (`WhateverXe-0.8.2.kext`, used by configs B and C) | 0.8.2 | https://github.com/b00t0x/WhateverXe |
+| WhateverXe test build (`WhateverXe-noccs.kext`, used only by the two `-noccs` test configs) | 0.8.3 + opt-in `-wex-noccs`, **not an official binary**. Upstream 0.8.3 plus a port of skmaiti2050's `-wex-noccs` patch (WhateverXe-TigerLakeH, branch `wex-0.8.2-noccs`; idea from [#163](https://github.com/b00t0x/WhateverXe/issues/163)). Built on 22 Nov 2026 by GitHub Actions ([run 45002111711](https://github.com/bharatvavdiya/WhateverXe/actions/runs/45002111711)) from commit `71e5c7c`. RELEASE executable SHA-256 `4e8b6d8c17049226db79fdf85ee35d6538aeede922bb186159baa2e27f5880a4`. A control build of unmodified 0.8.3 on the same CI matched the official binary except for its build-date stamp and Mach-O UUID | https://github.com/bharatvavdiya/WhateverXe (branch `wex-0.8.3-noccs`) |
 | AMFIAnchor + AMFIAnchorInjector | 0.1.2 / 1.0.0 | https://github.com/b00t0x/AMFIAnchor |
 | AMFIPass 1.4.1 Mod (used by config C only) | 1.4.1 | https://github.com/b00t0x/WhateverXe-Graphics (extras) |
 | VirtualSMC + SMCProcessor, SMCSuperIO, SMCBatteryManager, SMCLightSensor, SMCDellSensors | 1.3.9 | https://github.com/acidanthera/VirtualSMC |

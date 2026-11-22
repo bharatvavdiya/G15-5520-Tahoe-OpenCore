@@ -51,6 +51,8 @@ does this for you.
 | `config-maintenance.plist` (same as `config.plist` here) | off (`-wexoff`) | AMFIAnchor, AMFI on | Installing macOS, maintenance |
 | `config-accel.plist` (A) | 0.8.3 | AMFIAnchor + injector, AMFI on | **Recommended**: the official WhateverXe 0.8.3 setup |
 | `config-accel-dgpuoff.plist` (D) | 0.8.3 | AMFIAnchor + injector, AMFI on | A + `SSDT-dGPU-Off.aml`: hides the RTX 3050 from macOS. First session (21 Nov) ran 41 min, then froze during a wallpaper change; being re-tested, see [Freeze notes](#freeze-notes) |
+| `config-accel-noccs.plist` (A + CCS off) | 0.8.3 test build with `-wex-noccs` (`WhateverXe-noccs.kext`) | AMFIAnchor + injector, AMFI on | **Test only**: A with the GPU's Compute Command Streamer off ([#163](https://github.com/b00t0x/WhateverXe/issues/163)). A fix candidate for the wallpaper freeze, not yet tested on this laptop. Source: [bharatvavdiya/WhateverXe, branch `wex-0.8.3-noccs`](https://github.com/bharatvavdiya/WhateverXe/tree/wex-0.8.3-noccs) |
+| `config-accel-dgpuoff-noccs.plist` (D + CCS off) | the same test build | AMFIAnchor + injector, AMFI on | **Test only**: D with the same build |
 | `config-accel-noaccel.plist` (N) | 0.8.3 with `-wex-noaccel` | AMFIAnchor | Diagnostic: display path without GPU acceleration |
 | `config-accel-nov17.plist` (C) | 0.8.2 | AMFIPass 1.4.1 Mod + AMFI-relax boot-args | Old method; reached Metal 2 on 17 Nov, did not start the GPU on 19 Nov. WhateverXe now says to use AMFIAnchor instead |
 | `config-accel-082.plist` (B) | 0.8.2 | AMFIAnchor + injector, AMFI on | Fallback |
@@ -73,9 +75,10 @@ All configs:
 - **`-nvoff`:** parks the NullMoth NVIDIA driver if one is installed, and does nothing otherwise.
 - **`-v`:** verbose boot is on while testing.
 
-The components are unmodified upstream builds (tagged releases or Dortania build-repo CI builds), with two
+The components are unmodified upstream builds (tagged releases or Dortania build-repo CI builds), with three
 exceptions listed in [CREDITS.md](CREDITS.md): `XHCI-unsupported.kext` is a community variant that adds Alder Lake's
-`8086:51ED`, and `itlwm.kext` is not the official v2.3.0 binary. The OpenCore files are identical to Dortania build
+`8086:51ED`, `itlwm.kext` is not the official v2.3.0 binary, and `WhateverXe-noccs.kext` is an opt-in `-wex-noccs`
+test build used only by the two `-noccs` configs. The OpenCore files are identical to Dortania build
 `OpenCorePkg-ebea824` (1.0.9), and all configs pass that build's `ocvalidate`.
 
 ### `SSDT-dGPU-Off.aml` (config D only)
@@ -108,9 +111,9 @@ Paths in the scripts assume the USB is mounted as `/Volumes/1401`; the scripts a
 | File | What it does |
 |---|---|
 | `01-STEPS.txt` | Step-by-step test plan |
-| `02-check.sh` | Collects version, kexts, display, logs and crash/GPU-restart reports into `reports/`, and shows whether a moving-wallpaper or video-decoder process runs and the Mac's IP address (for a ping test during a freeze). Changes nothing |
+| `02-check.sh` | Collects version, kexts, display, logs and crash/GPU-restart reports into `reports/`. Shows whether a moving-wallpaper or video-decoder process runs, the GPU compute-engine (CCS) state with the `-wex-noccs` proof marker, and the Mac's IP address (for a ping test during a freeze). Changes nothing |
 | `03-remove-nullmoth.sh` | Removes all NullMoth/1401 parts: services, kexts, Metal/Vulkan, NVRAM flags and the app. Then reinstalls WhateverXe Graphics 0.4.4 to rebuild the kernel collection |
-| `04-switch-to-accelerated.sh` | Next boot = A (default), or D / N / C / B |
+| `04-switch-to-accelerated.sh` | Next boot = A (default), or D / N / C / B, or AC / DC (A or D with the `-wex-noccs` test build; refuses if that kext is missing) |
 | `05-switch-to-maintenance.sh` | Next boot = maintenance (`safe` for Safe Mode, `ctr` for the old CpuTopologyRebuild variant) |
 | `06-test-mode.sh` | Turns off sleep and display sleep, and Apple's media-analysis agents. These are the safe daily settings for this laptop, so there is deliberately no `undo` |
 | `07-cpu-test.sh` | 10-minute CPU load test (works in every mode; the steps run it in mode A). Logs every 30 s to `reports/` to catch a platform hang |
@@ -140,7 +143,10 @@ This is what is known, not a final verdict:
   [#117](https://github.com/b00t0x/WhateverXe/issues/117) and [#90](https://github.com/b00t0x/WhateverXe/issues/90)).
   0.8.3 claims better eDP handling after display sleep, but it is untested on this panel, so display sleep stays off.
 - **An identical i5-12500H / `46A6` setup** also reported freezes:
-  [WhateverXe #42](https://github.com/b00t0x/WhateverXe/issues/42).
+  [WhateverXe #42](https://github.com/b00t0x/WhateverXe/issues/42). The owner also reported (unverified) freezes
+  without acceleration, and short `cpus=1` sessions stayed usable; the reporter says this does not prove a CPU
+  cause. A multi-context-off trial there still froze. This laptop passed a 10-minute full-load CPU test with
+  graphics on.
 - **Untested hardware:** the WhateverXe README lists 80-EU Alder Lake-H graphics and Alder Lake-H internal
   screens as "expected to work, not yet tested on hardware".
 
@@ -168,14 +174,36 @@ What the logs showed on 21 Nov (config D, first session):
 - The whole Mac then froze while the wallpaper was changed in System Settings (Tahoe Dark, then a plain colour).
   The unified log simply stops at 17:17:37 IST; there is no GPU error, hang or restart line, and OpenCore's
   next log shows `EB|P:MPI] N` (no panic). The forced power-off also cut off the last seconds of the log.
-- Most likely cause: the Iris Xe driver stalling during wallpaper work. The Tahoe wallpaper (its renderer is
-  Apple's `NeptuneOneWallpaper` extension) ran with acceleration for the first time in that session, and it
-  started the video decoder (`VTDecoderXPCService`), which also decodes HEIC stills. Mode A logged GPU "timed out
-  fence" stalls during video decoding too. Because the new wallpaper and the new SSDT arrived together, D is not
-  ruled out. No upstream WhateverXe report covers wallpaper-change hangs; GPU hangs under video work on this
-  chip family are reported ([#75](https://github.com/b00t0x/WhateverXe/issues/75),
-  [#126](https://github.com/b00t0x/WhateverXe/issues/126), [#168](https://github.com/b00t0x/WhateverXe/issues/168)).
-- Workaround: a plain colour wallpaper and a non-video screen saver, changed only in maintenance mode.
+- Most likely cause: the Iris Xe driver stalling during wallpaper work, either in its video decoder or in one of
+  its GPU engines; the logs cannot tell which.
+  - The Tahoe wallpaper's renderer (Apple's `NeptuneOneWallpaper` extension) plays a video: every time it starts,
+    the video decoder (`VTDecoderXPCService`) starts too. In that session it ran with acceleration for the first
+    time.
+  - The freeze came about 1.4 s or more after the Wallpaper pane opened for the second time. The first visit, a
+    minute earlier, did not freeze.
+  - In maintenance mode (no acceleration) the same wallpaper runs without problems.
+  - Because the new wallpaper and the new SSDT arrived together, D is not ruled out.
+  - No upstream WhateverXe report covers wallpaper-change hangs. The closest is
+    [#168](https://github.com/b00t0x/WhateverXe/issues/168): on the same `46A6` chip with the same WhateverXe 0.8.3 /
+    Graphics 0.4.4 (but macOS 15.8.3, with NullMoth 2.9 loaded), the hardware HEVC decoder process stalls in a
+    fence wait when a video is torn down or rebuilt, while the Mac stays usable, and recovers after 30-60 s.
+    GPU hangs under video work on this chip family are also reported
+    ([#75](https://github.com/b00t0x/WhateverXe/issues/75), [#126](https://github.com/b00t0x/WhateverXe/issues/126)).
+- Not evidence: the `timed out fence` lines WindowServer logged on 20 Nov. Their IDs are WindowServer's own
+  CoreAnimation transaction fences (its PID shifted left by 32 bits, plus a counter). The same lines appear at
+  ordinary logins, and the GPU recovery count stayed at 0.
+- The plan, instead of "never change the wallpaper":
+  1. A controlled test in config A (guide PART 13): 10 rounds of the same Tahoe Dark to colour switch, with a
+     check that the video wallpaper really runs. At a freeze, wait 5 minutes and note whether and when it
+     recovers. A decoder stall like #168 and a GPU-engine hang that the driver resets can both recover, so the
+     logs (GPU-restart lines and reports, or none) decide which part stalled.
+  2. Depending on the result, a fix test (PART 14). One candidate is the opt-in `-wex-noccs` test build, which
+     keeps compute work off the Compute Command Streamer ([#163](https://github.com/b00t0x/WhateverXe/issues/163)).
+     Upstream results are mixed: fixed on one Raptor Lake-HX, partial on Tiger Lake-H, no effect on an Alder
+     Lake-H `46A3`, and no effect on the (possibly not GPU-related) freezes in #42 on the same `46A6` /
+     i5-12500H. The other candidate is a build that hides the hardware video decoder so that VideoToolbox
+     decodes in software; it is not written yet.
+  3. Until then, the wallpaper is changed only in maintenance mode, or as the test says.
 - Separate issue: about 2 minutes after every start, macOS's NetBIOS service (`netbiosd`) opens an SMB
   connection to a device on the local network by itself; nothing is mounted. At shutdown the SMB code can loop on
   reconnecting (about 560,000 kernel log lines in under a second) and stall the shutdown (20 and 22 Nov). This is
@@ -193,6 +221,6 @@ Log messages that are harmless on this laptop:
 
 ## Credits
 
-See [CREDITS.md](CREDITS.md). The binaries are unmodified upstream builds, except the two noted there.
+See [CREDITS.md](CREDITS.md). The binaries are unmodified upstream builds, except the three noted there.
 
 Provided as is, without warranty. Running macOS on non-Apple hardware may be against Apple's license terms.

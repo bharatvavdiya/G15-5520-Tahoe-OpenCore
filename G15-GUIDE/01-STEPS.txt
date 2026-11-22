@@ -1,4 +1,4 @@
-G15 5520 - Iris Xe graphics - STEPS  (version 8, 22 Nov)
+G15 5520 - Iris Xe graphics - STEPS  (version 9, 22 Nov)
 =========================================================
 
 RESULT SO FAR
@@ -14,10 +14,19 @@ RESULT SO FAR
     sound output. With a Bluetooth soundbar selected, YouTube plays. Bluetooth audio works.
   - D test (21 Nov): macOS no longer saw the RTX 3050 and D ran 41 minutes normally. Then
     the whole Mac froze while you changed the wallpaper. No crash was recorded and the
-    logs show no error: they simply stop. The "Tahoe Dark" wallpaper had just run with
-    graphics acceleration for the first time, so the most likely cause is the Iris Xe
-    driver stalling on that wallpaper work. D's change is not ruled out yet. The grey was
-    never saved, so the Tahoe wallpaper would start again: PART 12 changes it first.
+    logs show no error: they simply stop. The "Tahoe Dark" wallpaper plays a video, and
+    the freeze came right after the Wallpaper settings opened again, so the most likely
+    cause is the Iris Xe driver stalling on that work (its video decoder or one of its GPU
+    engines; the logs cannot tell which). A minute earlier the switch TO Tahoe Dark did
+    not freeze; reopening the settings while it ran froze the first time. D's change is
+    not ruled out. The grey was never saved, so the Tahoe wallpaper would start again:
+    PART 12 changes it first.
+  - Wallpaper rule: "do not change it" is only TEMPORARY, not the solution. PART 13 tests
+    whether changing the wallpaper freezes the official driver in A. If it does, the logs
+    of the freeze decide the fix to test in PART 14: a test build that turns off the GPU's
+    compute engine (CCS, on the USB as TEST 7 and TEST 8), or one that turns off the
+    hardware video decoder (Claude builds it if needed). The WhateverXe developer has not
+    released a fix for this yet.
   - Lab check (22 Nov): 84.3 GB free next to macOS, and Apple still offers the 26.7.3
     installer, so the NVIDIA lab fits. Nothing was created.
   - Shut Down stalled on 20 and 22 Nov. Cause: about 2 minutes after every start, macOS's
@@ -27,10 +36,12 @@ RESULT SO FAR
     see IF IT HANGS step 0.
 
 Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS)
-  A                  WhateverXe 0.8.3 + AMFIAnchor (official method, works)
+  A                  WhateverXe 0.8.3 + AMFIAnchor (official method, works)   <- PART 13
   D                  A + NVIDIA RTX 3050 hidden in macOS (test again in PART 5)
   N                  WhateverXe 0.8.3 display only, no acceleration (test)
   C                  old Nov 17 setup (did not start the GPU on 19 Nov)
+  TEST 7 / TEST 8    A / D with a WhateverXe test build: GPU compute engine (CCS) off.
+                     Only for PART 14, and only when Claude says so.
   MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.     <- NEXT START (PART 12)
                      (SAFE = also Safe Mode)
 
@@ -57,18 +68,78 @@ PART 12 - STILL WALLPAPER  (NEXT START, in MAINTENANCE: the USB is already set t
   7. Apple menu > Log Out, log in again, wait 1 minute, then run (want: no output at all):
          pgrep -lf 'NeptuneOne|WallpaperAerials|VTDecoderXPC'
      If anything is listed, stop here and tell Claude what it shows.
-  8. Apple menu > Shut Down (if it stalls after that, see IF IT HANGS step 0). Then PART 5.
+  8. Apple menu > Shut Down (if it stalls after that, see IF IT HANGS step 0). Then PART 13.
 
 
-PART 5 - TEST D AGAIN  (after PART 12: NVIDIA RTX 3050 hidden in macOS)
+PART 13 - WALLPAPER TEST IN A  (after PART 12; official driver, nothing else changed)
+  Goal: does changing the wallpaper freeze the official driver? Whatever happens, your
+  report and the logs show Claude the next step: lift the wallpaper rule, or which fix to
+  test. Ethernet and charger plugged in.
+  In Windows first:
+  1. G15-SWITCH-MODE.bat -> choose 3 (A), not 7. Then G15-CHECK-USB.cmd (click Yes): it
+     must end with exactly "Next macOS start uses: A".
+  In macOS:
+  2. F12 -> USB -> OpenCore -> your macOS disk. Log in: the desktop shows your colour. Open
+     only Terminal and run:
+         sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
+     Want: Metal 2, 1536 MB, and "Compute engine (CCS): ... Enabled." Write down the
+     "IP address" line. If your phone has a ping app, ping that address now and note
+     whether it answers.
+     Stop if MODE is not "ACCELERATED (WhateverXe on)", or 1536 MB, Metal 2 or the
+     "Enabled." line is missing, or the desktop is not your colour: Apple menu > Shut
+     Down, start Windows and tell Claude "W stop" (the report is saved).
+  3. Wait 5 minutes without touching anything (macOS is still busy right after login).
+  4. One round (about 3 minutes). Write the round number on your phone before you start:
+     a. Apple menu > System Settings > Wallpaper: choose Tahoe Dark exactly as on 21 Nov
+        (the Tahoe wallpaper, and Dark in the menu next to it if there is one). Wait until
+        the desktop shows it (the first time it can download for 1-2 minutes), then 30 s.
+     b. Quit System Settings (Cmd+Q). Wait 30 seconds. In round 1 and round 10 only,
+        click Terminal during this wait and run:
+            pgrep -lf 'NeptuneOne|VTDecoderXPC'
+        Want a line that contains "NeptuneOne" (the video wallpaper runs). If there is
+        none: stop, set your colour again, Shut Down, tell Claude "W wrong wallpaper".
+     c. Open System Settings > Wallpaper again (on 21 Nov it froze at this point). When
+        the pane has loaded, click your colour under "Colors". Wait 1 minute.
+     d. Quit System Settings (Cmd+Q).
+  5. Repeat step 4 until you have done 10 rounds. The wallpaper ends on your colour.
+  6. Run the step 2 command again. Apple menu > Shut Down. Start Windows and tell Claude:
+     "W report, 10 rounds, no freeze", plus anything odd (stutter, black flashes, a slow
+     pane).
+  IF THE SCREEN FREEZES during the rounds (this also counts: System Settings or the
+  wallpaper stops responding, with a spinning wheel, even if the mouse still moves; do not
+  Force Quit anything):
+  - Note the time, the round and the letter (for example "round 3, c"). Caps Lock light:
+    does it change? Mouse: does it move? Ping: answers (only if it answered in step 2)?
+  - Then wait 5 full minutes. Some stalls end by themselves (a known video-decoder stall
+    on this chip ends after 30-60 seconds), others need the power button. You may move
+    the mouse a little every 30 seconds (no clicks) to see when it responds again.
+  - It comes back by itself: note after how long, and whether you see your desktop or the
+    login window. Run the step 2 command, Shut Down, and tell Claude "W report, round X
+    letter Y, recovered after Z minutes" (add "login window" if you saw it).
+  - It restarts by itself (Windows or the boot menu appears): that was a crash. Do not
+    start A. Do IF IT HANGS steps 5 and 6, and tell Claude "W report, round X letter Y,
+    restarted".
+  - It does not come back: hold the power button, then IF IT HANGS steps 5 and 6, and
+    tell Claude "W report, round X letter Y, no recovery".
+  - After any freeze: at your next MAINTENANCE start, set your colour again (PART 12
+    step 4) before you use any other mode. Claude picks the fix from the logs.
+
+
+PART 14 - FIX TEST  (only when Claude says so, after the W report)
+  Claude picks the fix from your W report and the logs, and gives you the steps. TEST 7
+  and TEST 8 in G15-SWITCH-MODE.bat (A or D with the GPU compute engine off) are ready
+  for it. Do not use them before that.
+
+
+PART 5 - TEST D AGAIN  (when Claude says so, after the W report: RTX 3050 hidden in macOS)
   In the BIOS, keep graphics on Hybrid (not NVIDIA-only).
   In Windows first:
   1. Double-click G15-SWITCH-MODE.bat on the USB and choose 4 (D). Then double-click
-     G15-CHECK-USB.cmd, click Yes. It must end with "Next macOS start uses: D".
+     G15-CHECK-USB.cmd, click Yes. It must end with exactly "Next macOS start uses: D".
   In macOS:
   2. F12 -> USB -> OpenCore -> your macOS disk. Log in: the desktop must show your colour.
      Select your soundbar as the sound output (System Settings > Sound > Output).
-     Do not open the Wallpaper or Screen Saver settings in A or D.
+     In this test, do not open the Wallpaper or Screen Saver settings (D is tested alone).
   3. Run:
          sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
      Want: "NVIDIA dGPU devices visible: 0", Metal 2, 1536 MB, and "Moving-wallpaper or
@@ -107,8 +178,8 @@ PART 9 - SMOOTHER DESKTOP  (same session as PART 5, before you shut down)
   2. System Settings > Accessibility > Display > Reduce transparency: ON
   3. System Settings > Accessibility > Motion > Reduce motion: ON
      If 2 or 3 was already ON, leave it ON and write down "already ON" for Claude.
-  4. Wallpaper and screen saver: nothing to do, PART 12 set them. Never open or change
-     them in A or D.
+  4. Wallpaper and screen saver: nothing to do, PART 12 set them. Do not change them in
+     this test.
   5. Apple menu > Log Out, then log in again (WindowServer starts fresh). Open Terminal
      and wait 5 minutes without touching anything (right after login macOS is still busy,
      which would make AFTER look worse).
@@ -140,11 +211,13 @@ IF IT HANGS OR FREEZES (any mode)
      switch, no 08) and tell Claude "Shut Down stalled" in your next report.
   1. Note the time on your phone. Press Caps Lock: does its light change? Move the
      mouse: does it move? Take a photo if text is showing.
-  2. Only if your phone's ping app got answers from the Mac before (PART 5 step 3): ping
+  2. Only if your phone's ping app got answers before (PART 13 step 2, PART 5 step 3): ping
      the same address again. Answers = only the screen/graphics hung; no answer = the
      whole Mac hung. Note which.
-  3. Wait the full 3 minutes: a stuck screen can turn into a crash report that tells much
-     more. If the laptop restarts by itself, that was a crash: go to step 5.
+  3. Wait 5 full minutes: a stuck screen can come back by itself, or turn into a crash
+     report that tells much more. If it comes back, note after how long, then run 02-check
+     and Shut Down normally. If the laptop restarts by itself, that was a crash: go to
+     step 5.
   4. Still stuck: hold the power button to turn off.
   5. F12 -> Windows Boot Manager. On the USB, double-click G15-CHECK-USB.cmd (click Yes),
      then G15-SWITCH-MODE.bat -> choose 2 (MAINTENANCE normal).
@@ -153,8 +226,9 @@ IF IT HANGS OR FREEZES (any mode)
          sudo bash /Volumes/1401/G15-GUIDE/08-freeze-logs.sh 24
      It also saves every app's log from the 10 minutes before the previous macOS session
      stopped. Its line "previous session's last kernel line:" must show the day and about
-     the time you noted in step 1. If it does not, or it says "skipped", tell Claude the
-     freeze time: 13-log-window.sh can then save that window.
+     the time you noted in step 1 (or up to about 6 minutes later, when you turned it
+     off). If it does not, or it says "skipped", tell Claude the freeze time:
+     13-log-window.sh can then save that window.
      Then start Windows and tell Claude: "check logs".
 
 
@@ -173,9 +247,9 @@ WHAT THIS LAPTOP CAN AND CANNOT DO IN macOS (checked against Apple and WhateverX
 
 DO NOT
   - No Apple menu > Sleep, no closing the lid, no "Put Display to Sleep" hot corner.
-  - Do not open or change the Wallpaper or Screen Saver settings in A or D. Use only a
-    plain colour as wallpaper (no Dynamic, Tahoe, aerial or picture wallpapers): D froze
-    during a wallpaper change on 21 Nov. Change them only in MAINTENANCE.
+  - TEMPORARY, until Claude updates it after your W report: change the wallpaper and
+    screen saver only in MAINTENANCE or exactly as PART 13 says (D froze during a
+    wallpaper change on 21 Nov).
   - No Apple menu > Lock Screen and no Control-Command-Q: they start the screen saver.
   - No Photos app, no Live Text on pictures (GPU hang triggers reported on Iris Xe).
   - No cleaner apps, no icon-cache tricks, no Safe Mode "to clear caches".

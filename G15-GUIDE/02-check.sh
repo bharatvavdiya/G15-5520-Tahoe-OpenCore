@@ -14,6 +14,7 @@ echo "Collecting information (1 to 3 minutes, please wait and do not use the lap
   case " $(nvram boot-args 2>/dev/null) " in
     *" -wexoff "*) echo "MODE: MAINTENANCE (WhateverXe off)";;
     *" -wex-noaccel "*) echo "MODE: N (WhateverXe display only)";;
+    *" -wex-noccs "*) echo "MODE: ACCELERATED + CCS off (WhateverXe -wex-noccs test build)";;
     *) echo "MODE: ACCELERATED (WhateverXe on)";;
   esac
   echo; echo "--- macOS version"; sw_vers
@@ -51,7 +52,10 @@ echo "Collecting information (1 to 3 minutes, please wait and do not use the lap
   ioreg -r -n NHG1 -d 1 2>/dev/null | head -3
   echo; echo "--- graphics accelerator objects"; ioreg -r -c IOAccelerator -d 1 2>/dev/null | head -120
   echo; echo "--- WhateverXe display admission (for upstream triage)"; ioreg -lw0 -r -k N97Admission -d1 2>/dev/null
-  echo; echo "--- WhateverXe status keys"; ioreg -l -d1 -w0 2>/dev/null | grep -E 'WhateverXeDataAccess|WhateverXeWebKit|TGLIRQLive|N97GTFaultCapture|TGLHostObservation|TGLCSB12'
+  echo; echo "--- WhateverXe status keys"; ioreg -l -d1 -w0 2>/dev/null | grep -E 'WhateverXeDataAccess|WhateverXeWebKit|TGLIRQLive|N97GTFaultCapture|TGLHostObservation|TGLCSB12|WhateverXeNoCCS'
+  echo; echo "--- compute engine switch (A and D: Enabled. / the CCS-off modes: want Disabled! and WhateverXeNoCCS <0100000001000000>)"
+  echo "Compute engine (CCS): $(log show --last boot --style compact --predicate 'process == "kernel" AND eventMessage CONTAINS "Multi-Context"' 2>/dev/null | grep -o 'Multi-Context.*' | tail -n 1)"
+  echo "WhateverXeNoCCS (CCS-off modes only; found, patched): $(ioreg -l -d1 -w0 2>/dev/null | grep -o '"WhateverXeNoCCS" = <[0-9a-fA-F]*>' | head -n 1 | sed 's/.*= //')"
   echo; echo "--- backlight"; ioreg -lw0 2>/dev/null | grep -E 'WhateverXeBacklight|TGLBacklightPWM'
   echo; echo "--- Bluetooth (want: bluetoothd running, FirmwareLoaded = Yes, 0 bluetoothd corpses)"
   pgrep -lx bluetoothd
@@ -78,4 +82,4 @@ cp "$USB"/panic-*.txt "$DD/" 2>/dev/null
 echo "Saved: $OUT"
 echo "Crash/hang/panic reports copied: $(ls "$DD" | wc -l | tr -d ' ')"
 echo
-grep -E 'MODE:|ProductVersion|InstallStatus|VRAM|Metal|Resolution|UI Looks like|NVIDIA dGPU devices|FirmwareLoaded|revpatch|bluetoothd corpses|Moving-wallpaper|IP address' "$OUT"
+grep -E 'MODE:|ProductVersion|InstallStatus|VRAM|Metal|Resolution|UI Looks like|NVIDIA dGPU devices|FirmwareLoaded|revpatch|bluetoothd corpses|Moving-wallpaper|IP address|Compute engine|WhateverXeNoCCS \(' "$OUT"
