@@ -39,6 +39,12 @@ echo "Collecting information (1 to 3 minutes, please wait and do not use the lap
   echo; echo "--- test mode state (want: indexing disabled on this USB; mediaanalysisd + photoanalysisd disabled)"
   mdutil -s "$USB" 2>&1
   launchctl print-disabled "gui/$(id -u "$CU")" 2>/dev/null | grep -E 'mediaanalysisd|photoanalysisd'
+  echo; echo "--- moving wallpaper / video decoder (D froze during a wallpaper change on 21 Nov; want a plain colour)"
+  echo "Moving-wallpaper or video-decoder processes: $(pgrep -f 'NeptuneOne|WallpaperAerials|VTDecoderXPC' 2>/dev/null | wc -l | tr -d ' ') (want 0 when Safari, Chrome and other video apps are quit)"
+  pgrep -lf 'NeptuneOne|WallpaperAerials|VTDecoderXPC' 2>/dev/null | cut -c1-160
+  echo; echo "--- network (note the IP address: if the screen ever freezes, a phone ping app shows whether the Mac still answers)"
+  ifconfig 2>/dev/null | awk '/^[a-z0-9]+:/ { i = $1 } /inet / && $2 != "127.0.0.1" { print "IP address: " $2 "  (" i ")" }'
+  echo "SMB connections now (port 445; macOS's NetBIOS service opens one to REALTEK, the shutdown-stall source): $(netstat -an -p tcp 2>/dev/null | grep -c '\.445 .*ESTABLISHED')"
   echo; echo "--- displays"; system_profiler SPDisplaysDataType
   echo; echo "--- NVIDIA dGPU seen by macOS (mode D turns it off: want 0 there)"
   echo "NVIDIA dGPU devices visible: $(ioreg -l -w0 2>/dev/null | grep -c '"vendor-id" = <de100000>')"
@@ -72,4 +78,4 @@ cp "$USB"/panic-*.txt "$DD/" 2>/dev/null
 echo "Saved: $OUT"
 echo "Crash/hang/panic reports copied: $(ls "$DD" | wc -l | tr -d ' ')"
 echo
-grep -E 'MODE:|ProductVersion|InstallStatus|VRAM|Metal|Resolution|UI Looks like|NVIDIA dGPU devices|FirmwareLoaded|revpatch|bluetoothd corpses' "$OUT"
+grep -E 'MODE:|ProductVersion|InstallStatus|VRAM|Metal|Resolution|UI Looks like|NVIDIA dGPU devices|FirmwareLoaded|revpatch|bluetoothd corpses|Moving-wallpaper|IP address' "$OUT"

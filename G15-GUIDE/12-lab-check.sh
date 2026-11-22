@@ -26,7 +26,7 @@ echo "Collecting (up to 1 minute)..."
   ( sleep 60; kill "$P" 2>/dev/null ) &
   W=$!
   wait "$P" 2>/dev/null
-  kill "$W" 2>/dev/null
+  kill "$W" 2>/dev/null; wait "$W" 2>/dev/null   # reap the timer quietly (no "Terminated: 15" line)
   head -n 25 "$T"
   rm -f "$T"
 } > "$OUT" 2>&1

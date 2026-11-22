@@ -1,4 +1,4 @@
-G15 5520 - Iris Xe graphics - STEPS  (version 7, 20 Nov)
+G15 5520 - Iris Xe graphics - STEPS  (version 8, 22 Nov)
 =========================================================
 
 RESULT SO FAR
@@ -7,20 +7,188 @@ RESULT SO FAR
   - The old freezes are explained: one was a real crash caused by NullMoth's drivers (a
     NullMoth boot setting made it look like a freeze); the others came from NullMoth or from
     the old 0.8.2 setup (mode C). None of that is on the system any more.
-  - The USB stick had file errors (and Windows logged 7 USB controller errors). Everything on
-    it is backed up on the PC. Step 1 below repairs it.
   - A2 test (20 Nov): stable, including the 10-minute CPU test with graphics on. The icon
     placeholders were a one-time cache build (confirmed). Bluetooth works.
   - No sound: macOS 26 removed Apple's audio driver, so the built-in speakers have no driver.
     CONFIRMED (20 Nov): YouTube's "An error occurred" in Safari happens when macOS has no
     sound output. With a Bluetooth soundbar selected, YouTube plays. Bluetooth audio works.
+  - D test (21 Nov): macOS no longer saw the RTX 3050 and D ran 41 minutes normally. Then
+    the whole Mac froze while you changed the wallpaper. No crash was recorded and the
+    logs show no error: they simply stop. The "Tahoe Dark" wallpaper had just run with
+    graphics acceleration for the first time, so the most likely cause is the Iris Xe
+    driver stalling on that wallpaper work. D's change is not ruled out yet. The grey was
+    never saved, so the Tahoe wallpaper would start again: PART 12 changes it first.
+  - Lab check (22 Nov): 84.3 GB free next to macOS, and Apple still offers the 26.7.3
+    installer, so the NVIDIA lab fits. Nothing was created.
+  - Shut Down stalled on 20 and 22 Nov. Cause: about 2 minutes after every start, macOS's
+    own NetBIOS service connects by itself to a device on your network called "REALTEK"
+    (probably the router), and macOS's network-share code loops while shutting down.
+    Nothing is mounted, so there is nothing to eject. It is not a graphics freeze:
+    see IF IT HANGS step 0.
 
 Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS)
   A                  WhateverXe 0.8.3 + AMFIAnchor (official method, works)
-  D                  A + NVIDIA RTX 3050 switched off in macOS            <- NEXT START
+  D                  A + NVIDIA RTX 3050 hidden in macOS (test again in PART 5)
   N                  WhateverXe 0.8.3 display only, no acceleration (test)
   C                  old Nov 17 setup (did not start the GPU on 19 Nov)
-  MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.  (SAFE = also Safe Mode)
+  MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.     <- NEXT START (PART 12)
+                     (SAFE = also Safe Mode)
+
+
+PART 12 - STILL WALLPAPER  (NEXT START, in MAINTENANCE: the USB is already set to it)
+  The graphics driver is off in MAINTENANCE, so changing the wallpaper is safe here.
+  In Windows first:
+  1. Double-click G15-CHECK-USB.cmd on the USB, click Yes. It must end with
+     "Next macOS start uses: MAINTENANCE normal".
+  In macOS (slow, with 7 MB: normal in this mode):
+  2. F12 -> USB -> OpenCore -> your macOS disk. Log in. Open only Terminal.
+  3. Save the full log of the freeze before macOS deletes it (only reads, 1-3 minutes):
+         sudo bash /Volumes/1401/G15-GUIDE/13-log-window.sh
+  4. Apple menu > System Settings > Wallpaper (in the sidebar; scroll down if needed).
+     On the right, scroll down to "Colors" and click one colour, for example dark grey.
+     Not the Rotate button, and not a picture: pictures can be HEIC files, which go
+     through the same video decoder. Wait up to 1 minute until the desktop shows the
+     colour. If "Show on all Spaces" appears at the top, turn it on.
+  5. In the same window click "Screen Saver" (on the right). Set "Use Screen Saver" to
+     "Custom", click "Message" under "Other", and set "Start Screen Saver" to "Never"
+     (if "Never" is not offered, choose the longest time).
+  6. System Settings > Desktop & Dock > Hot Corners (at the bottom): no corner may start
+     the screen saver, lock the screen or put the display to sleep (choose "-" there).
+  7. Apple menu > Log Out, log in again, wait 1 minute, then run (want: no output at all):
+         pgrep -lf 'NeptuneOne|WallpaperAerials|VTDecoderXPC'
+     If anything is listed, stop here and tell Claude what it shows.
+  8. Apple menu > Shut Down (if it stalls after that, see IF IT HANGS step 0). Then PART 5.
+
+
+PART 5 - TEST D AGAIN  (after PART 12: NVIDIA RTX 3050 hidden in macOS)
+  In the BIOS, keep graphics on Hybrid (not NVIDIA-only).
+  In Windows first:
+  1. Double-click G15-SWITCH-MODE.bat on the USB and choose 4 (D). Then double-click
+     G15-CHECK-USB.cmd, click Yes. It must end with "Next macOS start uses: D".
+  In macOS:
+  2. F12 -> USB -> OpenCore -> your macOS disk. Log in: the desktop must show your colour.
+     Select your soundbar as the sound output (System Settings > Sound > Output).
+     Do not open the Wallpaper or Screen Saver settings in A or D.
+  3. Run:
+         sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
+     Want: "NVIDIA dGPU devices visible: 0", Metal 2, 1536 MB, and "Moving-wallpaper or
+     video-decoder processes: 0". Write down the "IP address" line (for IF IT HANGS).
+     If the desktop was not your colour in step 2, or that count is not 0: stop here. Do
+     not open the Wallpaper settings. Apple menu > Shut Down, start Windows and tell
+     Claude: "D wallpaper" (the report is already saved).
+     If your phone has a ping app (for example Fing): put the phone on your home Wi-Fi and
+     ping that address now. Note whether it answers.
+  4. Power check (does D really switch the RTX off, or only hide it?). Start it at least
+     12 minutes after macOS started (the script stops and tells you if it is too early).
+     First System Settings > Displays: drag the Brightness slider fully to the right (no
+     slider: skip this). Quit System Settings (Cmd+Q) so only Terminal is open. Unplug the
+     charger, wait 1 minute, then run (2 minutes, do not touch the laptop):
+         bash /Volumes/1401/G15-GUIDE/14-power-check.sh
+     Plug the charger back in. Claude will ask for the same check in A later (same full
+     brightness, also 12+ minutes after the start).
+  5. Use it 20-30 minutes (YouTube with the soundbar is fine). Then quit every app except
+     Terminal (Cmd+Q; Safari and Chrome too), wait 1 minute, and run the step 3 command
+     again (want 0 again). Then do PART 9 and PART 10 below in this same session.
+  6. Apple menu > Shut Down. Start Windows: Device Manager > Display adapters must still
+     show the RTX 3050. Then tell Claude: "D report".
+  If D freezes while you use it: follow IF IT HANGS below. If it stalls only after you
+  chose Shut Down: IF IT HANGS step 0, then still do the Windows check of step 6 and tell
+  Claude "D report, Shut Down stalled". Please leave the opencore-*.txt files on the USB.
+
+
+PART 9 - SMOOTHER DESKTOP  (same session as PART 5, before you shut down)
+  Measured on 20 Nov: while you clicked, WindowServer (draws the screen) used 11 CPU
+  seconds in 21 s while the GPU mostly slept, and the Aerial video wallpaper cost about
+  7 more. These macOS settings remove that work. All are normal settings, easy to undo.
+  1. Measure BEFORE: run the command below; when it says NOW, scroll a long web page in
+     Safari, then open System Settings and click only General, Sound and Accessibility
+     (never Wallpaper; ignore the script's other suggestions), until it says Saved:
+         sudo bash /Volumes/1401/G15-GUIDE/09-perf-check.sh watch
+  2. System Settings > Accessibility > Display > Reduce transparency: ON
+  3. System Settings > Accessibility > Motion > Reduce motion: ON
+     If 2 or 3 was already ON, leave it ON and write down "already ON" for Claude.
+  4. Wallpaper and screen saver: nothing to do, PART 12 set them. Never open or change
+     them in A or D.
+  5. Apple menu > Log Out, then log in again (WindowServer starts fresh). Open Terminal
+     and wait 5 minutes without touching anything (right after login macOS is still busy,
+     which would make AFTER look worse).
+  6. Measure AFTER: the same command and the same actions as step 1.
+  7. Note how scrolling and window moves feel, then do PART 10, then PART 5 step 6.
+  The remaining stutter is a known driver limit: two fixes (WhateverXe #130 and #147)
+  are accepted by the developer but not released yet. Claude will update WhateverXe and
+  WhateverXe Graphics together when an official release ships.
+
+
+PART 10 - FRAME-RATE TEST  (same session, after PART 9; decides whether our own
+          graphics-driver build is worth making)
+  The page only draws coloured squares and measures frames: no internet, changes nothing.
+  Keep its window in front and do not touch the laptop while it measures.
+  1. Google Chrome (if installed). If you changed chrome://flags "Skia Graphite" earlier,
+     set it to Default for this test. File > Open File > 1401 > G15-GUIDE >
+     11-frame-test.html. Click "canvas", wait 20 seconds, write down the Hz number.
+     Go back, click "webgl", wait 20 seconds, write it down.
+  2. Safari: File > Open File > the same file, the same two tests.
+  3. Tell Claude the numbers. About 120 Hz = no driver stall on this laptop (no custom
+     build needed). About 10-20 Hz in Chrome = the stall that a custom build could fix.
+
+
+IF IT HANGS OR FREEZES (any mode)
+  0. Stuck only AFTER you chose Shut Down or Restart (your apps had already closed)? That
+     is the known REALTEK shutdown stall, not a freeze. Wait 3 minutes (it sometimes
+     finishes by itself), then hold the power button to turn off. In Windows, run
+     G15-CHECK-USB.cmd (click Yes) before the next macOS start. Skip steps 1-6 (no mode
+     switch, no 08) and tell Claude "Shut Down stalled" in your next report.
+  1. Note the time on your phone. Press Caps Lock: does its light change? Move the
+     mouse: does it move? Take a photo if text is showing.
+  2. Only if your phone's ping app got answers from the Mac before (PART 5 step 3): ping
+     the same address again. Answers = only the screen/graphics hung; no answer = the
+     whole Mac hung. Note which.
+  3. Wait the full 3 minutes: a stuck screen can turn into a crash report that tells much
+     more. If the laptop restarts by itself, that was a crash: go to step 5.
+  4. Still stuck: hold the power button to turn off.
+  5. F12 -> Windows Boot Manager. On the USB, double-click G15-CHECK-USB.cmd (click Yes),
+     then G15-SWITCH-MODE.bat -> choose 2 (MAINTENANCE normal).
+  6. Start macOS (maintenance). This must be the FIRST macOS start after the freeze.
+     Open Terminal, run:
+         sudo bash /Volumes/1401/G15-GUIDE/08-freeze-logs.sh 24
+     It also saves every app's log from the 10 minutes before the previous macOS session
+     stopped. Its line "previous session's last kernel line:" must show the day and about
+     the time you noted in step 1. If it does not, or it says "skipped", tell Claude the
+     freeze time: 13-log-window.sh can then save that window.
+     Then start Windows and tell Claude: "check logs".
+
+
+WHAT THIS LAPTOP CAN AND CANNOT DO IN macOS (checked against Apple and WhateverXe docs)
+  - Iris Xe: Metal 2, the level Apple's Iris Xe driver provides. Metal 4 needs Apple
+    silicon (M1 or newer); Apple never made a Metal 3 driver for Iris Xe.
+  - RTX 3050: no macOS driver exists for RTX 20/30/40 cards. Mode D hides it from macOS
+    (PART 5 step 4 plus the same check in A shows whether it is also powered off); it
+    keeps working fully in Windows. HDMI is wired to it, so no HDMI in macOS.
+  - CPU: all 12 cores run with Apple's power management. Hyper-Threading stays off: with
+    it on, this exact CPU is reported to hang at start, and it gives no speed-up for the UI.
+  - Speakers: macOS 26 removed the Apple audio driver that AppleALC needs, so the built-in
+    speakers cannot work for now. Use USB or Bluetooth audio.
+  - Sleep: the firmware has no S3 sleep, so keep the Mac awake and use Shut Down.
+
+
+DO NOT
+  - No Apple menu > Sleep, no closing the lid, no "Put Display to Sleep" hot corner.
+  - Do not open or change the Wallpaper or Screen Saver settings in A or D. Use only a
+    plain colour as wallpaper (no Dynamic, Tahoe, aerial or picture wallpapers): D froze
+    during a wallpaper change on 21 Nov. Change them only in MAINTENANCE.
+  - No Apple menu > Lock Screen and no Control-Command-Q: they start the screen saver.
+  - No Photos app, no Live Text on pictures (GPU hang triggers reported on Iris Xe).
+  - No cleaner apps, no icon-cache tricks, no Safe Mode "to clear caches".
+  - Do not open the 1401 app and do not install anything from NullMoth or AppleALC.
+  - Do not Reset NVRAM, do not install macOS updates, never macOS 27.
+
+
+DONE PARTS (kept for reference)
+
+PART 11 - NVIDIA LAB: SPACE CHECK  (done 22 Nov)
+  12-lab-check.sh found 84.3 GB free in the macOS container, and Apple offers the 26.7.3
+  full installer. Do NOT create volumes, download installers or install NullMoth yet:
+  Claude prepares those steps after the D report.
 
 
 PART 7 - VIDEO AND SOUND  (done 20 Nov: with a sound output selected, Safari YouTube plays)
@@ -33,7 +201,7 @@ PART 7 - VIDEO AND SOUND  (done 20 Nov: with a sound output selected, Safari You
      in TextEdit and follow it.
   4. Smoother scrolling (normal macOS settings, easy to undo):
      System Settings > Accessibility > Display > Reduce transparency: ON
-     System Settings > Wallpaper: choose a still picture (not an Aerial video)
+     Wallpaper: a plain colour, set in MAINTENANCE (PART 12).
   5. Watch videos in a window or YouTube's theater mode, not full screen, and turn off
      System Settings > General > AirDrop & Continuity > AirPlay Receiver
      (both are known WindowServer crash triggers with this graphics driver).
@@ -41,31 +209,6 @@ PART 7 - VIDEO AND SOUND  (done 20 Nov: with a sound output selected, Safari You
      set it to Disabled, click Relaunch.
   7. Apple menu > Shut Down. Start Windows and tell Claude: "video report"
      (did Safari play with sound selected? does scrolling feel better?).
-
-
-PART 8 - WI-FI WITH HELIPORT  (skipped: Ethernet is used; kept here for later)
-  Your EFI already loads the official Intel Wi-Fi driver (itlwm); only its app is missing.
-  Wi-Fi then shows up in macOS as an extra "Ethernet", and you join networks from the
-  HeliPort icon in the menu bar. No AirDrop or Handoff with this method.
-  1. Finder > 1401 (the USB) > G15-GUIDE > downloads > open HeliPort-1.5.0.dmg.
-     Drag HeliPort onto Applications, then eject the dmg.
-  2. Open HeliPort from Applications. If macOS blocks it: System Settings > Privacy &
-     Security > Open Anyway.
-  3. Unplug the Ethernet cable. Click the HeliPort icon in the menu bar > Turn Wi-Fi On >
-     choose your network (best: 5 GHz, visible name, WPA2) > password > Join >
-     Always Allow.
-  4. In Terminal (must print an IP address such as 192.168.x.x):
-         ipconfig getifaddr en0
-     Then open a few websites. If there is no IP: System Settings > Network > the new
-     "Ethernet" service for en0 must be set to Using DHCP.
-  5. Start HeliPort automatically: System Settings > General > Login Items & Extensions >
-     + > Applications > HeliPort > Add.
-  6. Check graphics and Bluetooth are unchanged:
-         sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
-  7. Apple menu > Shut Down. Start Windows and tell Claude: "wifi report".
-  Do NOT use any tool that "root patches" macOS (OpenCore Legacy Patcher, OCLP-Mod,
-  kgp AirportItlwm-Tahoe): it rebuilds the driver collection that holds the Iris Xe
-  graphics and can remove the graphics driver at the next macOS update.
 
 
 PART 6 - LONGER TEST OF A  (done 20 Nov)
@@ -103,95 +246,26 @@ PART 6 - LONGER TEST OF A  (done 20 Nov)
  13. Apple menu > Shut Down. Start Windows and tell Claude: "A2 report".
 
 
-PART 5 - TEST D  (NEXT START: NVIDIA RTX 3050 switched off in macOS)
-  The USB is already set to D. In the BIOS, keep graphics on Hybrid (not NVIDIA-only).
-  1. In Windows first: double-click G15-CHECK-USB.cmd on the USB, click Yes. It must end
-     with "Next macOS start uses: D".
-  2. F12 -> USB -> OpenCore -> your macOS disk. Log in and select your soundbar as the
-     sound output (System Settings > Sound > Output).
-  3. Run:
+PART 8 - WI-FI WITH HELIPORT  (skipped: Ethernet is used; kept here for later)
+  Your EFI already loads the official Intel Wi-Fi driver (itlwm); only its app is missing.
+  Wi-Fi then shows up in macOS as an extra "Ethernet", and you join networks from the
+  HeliPort icon in the menu bar. No AirDrop or Handoff with this method.
+  1. Finder > 1401 (the USB) > G15-GUIDE > downloads > open HeliPort-1.5.0.dmg.
+     Drag HeliPort onto Applications, then eject the dmg.
+  2. Open HeliPort from Applications. If macOS blocks it: System Settings > Privacy &
+     Security > Open Anyway.
+  3. Unplug the Ethernet cable. Click the HeliPort icon in the menu bar > Turn Wi-Fi On >
+     choose your network (best: 5 GHz, visible name, WPA2) > password > Join >
+     Always Allow.
+  4. In Terminal (must print an IP address such as 192.168.x.x):
+         ipconfig getifaddr en0
+     Then open a few websites. If there is no IP: System Settings > Network > the new
+     "Ethernet" service for en0 must be set to Using DHCP.
+  5. Start HeliPort automatically: System Settings > General > Login Items & Extensions >
+     + > Applications > HeliPort > Add.
+  6. Check graphics and Bluetooth are unchanged:
          sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
-     Want: "NVIDIA dGPU devices visible: 0" (the RTX is off), still Metal 2 and 1536 MB.
-  4. Use it 20-30 minutes (YouTube with the soundbar is fine), then run the same command
-     again. Then do PART 9 below in this same session.
-  5. Apple menu > Shut Down. Start Windows: Device Manager > Display adapters must still
-     show the RTX 3050. Then tell Claude: "D report".
-  If D does not start or freezes: Windows > G15-CHECK-USB.cmd > G15-SWITCH-MODE.bat >
-  choose 3 (A), and tell Claude. Please leave the opencore-*.txt files on the USB.
-
-
-PART 9 - SMOOTHER DESKTOP  (same session as PART 5, before you shut down)
-  Measured on 20 Nov: while you clicked, WindowServer (draws the screen) used 11 CPU
-  seconds in 21 s while the GPU mostly slept, and the Aerial video wallpaper cost about
-  7 more. These macOS settings remove that work. All are normal settings, easy to undo.
-  1. Measure BEFORE: run the command below; when it says NOW, scroll a long web page in
-     Safari and open System Settings, until it says Saved:
-         sudo bash /Volumes/1401/G15-GUIDE/09-perf-check.sh watch
-  2. System Settings > Accessibility > Display > Reduce transparency: ON
-  3. System Settings > Accessibility > Motion > Reduce motion: ON
-  4. System Settings > Wallpaper: choose a still picture under "Pictures" or "Colors"
-     (not an Aerial/Landscape video). In the same pane, Screen Saver: choose one under
-     "Other".
-  5. Apple menu > Log Out, then log in again (WindowServer starts fresh).
-  6. Measure AFTER: the same command and the same actions as step 1.
-  7. Note how scrolling and window moves feel, then do PART 10 and PART 11, then PART 5
-     step 5.
-  The remaining stutter is a known driver limit: two fixes (WhateverXe #130 and #147)
-  are accepted by the developer but not released yet. Claude will update WhateverXe and
-  WhateverXe Graphics together when an official release ships.
-
-
-PART 10 - FRAME-RATE TEST  (same session, after PART 9; decides whether our own
-          graphics-driver build is worth making)
-  The page only draws coloured squares and measures frames: no internet, changes nothing.
-  Keep its window in front and do not touch the laptop while it measures.
-  1. Google Chrome (if installed). If you changed chrome://flags "Skia Graphite" earlier,
-     set it to Default for this test. File > Open File > 1401 > G15-GUIDE >
-     11-frame-test.html. Click "canvas", wait 20 seconds, write down the Hz number.
-     Go back, click "webgl", wait 20 seconds, write it down.
-  2. Safari: File > Open File > the same file, the same two tests.
-  3. Tell Claude the numbers. About 120 Hz = no driver stall on this laptop (no custom
-     build needed). About 10-20 Hz in Chrome = the stall that a custom build could fix.
-
-
-PART 11 - NVIDIA LAB: SPACE CHECK  (same session, after PART 10; only reads, 1 minute)
-  Plan: a second, separate macOS on the internal disk for the NVIDIA driver, booted only
-  with BIOS Hybrid OFF and its own USB mode. Your working macOS stays untouched.
-  This step only measures free space and IDs. Nothing is created yet.
-  1. In Terminal (without sudo):
-         bash /Volumes/1401/G15-GUIDE/12-lab-check.sh
-  2. It ends with "Saved: ...". Continue with PART 5 step 5 (Shut Down).
-  Do NOT create volumes, download installers or install NullMoth yet: Claude prepares
-  those steps after seeing the space numbers.
-
-
-IF IT HANGS OR FREEZES (any mode)
-  1. Press Caps Lock: does its light change? Move the mouse: does it move?
-     Take a photo if text is showing.
-  2. Wait 3 minutes. If the laptop restarts by itself, that was a crash: go to step 4.
-  3. Still stuck: hold the power button to turn off.
-  4. F12 -> Windows Boot Manager. On the USB, double-click G15-CHECK-USB.cmd (click Yes),
-     then G15-SWITCH-MODE.bat -> choose 2 (MAINTENANCE normal).
-  5. Start macOS (maintenance), open Terminal, run:
-         sudo bash /Volumes/1401/G15-GUIDE/08-freeze-logs.sh
-     Then start Windows and tell Claude: "check logs".
-
-
-WHAT THIS LAPTOP CAN AND CANNOT DO IN macOS (checked against Apple and WhateverXe docs)
-  - Iris Xe: Metal 2, the level Apple's Iris Xe driver provides. Metal 4 needs Apple
-    silicon (M1 or newer); Apple never made a Metal 3 driver for Iris Xe.
-  - RTX 3050: no macOS driver exists for RTX 20/30/40 cards. Mode D switches it off in
-    macOS; it keeps working fully in Windows. HDMI is wired to it, so no HDMI in macOS.
-  - CPU: all 12 cores run with Apple's power management. Hyper-Threading stays off: with
-    it on, this exact CPU is reported to hang at start, and it gives no speed-up for the UI.
-  - Speakers: macOS 26 removed the Apple audio driver that AppleALC needs, so the built-in
-    speakers cannot work for now. Use USB or Bluetooth audio.
-  - Sleep: the firmware has no S3 sleep, so keep the Mac awake and use Shut Down.
-
-
-DO NOT
-  - No Apple menu > Sleep, no closing the lid, no "Put Display to Sleep" hot corner.
-  - No Photos app, no Live Text on pictures (GPU hang triggers reported on Iris Xe).
-  - No cleaner apps, no icon-cache tricks, no Safe Mode "to clear caches".
-  - Do not open the 1401 app and do not install anything from NullMoth or AppleALC.
-  - Do not Reset NVRAM, do not install macOS updates, never macOS 27.
+  7. Apple menu > Shut Down. Start Windows and tell Claude: "wifi report".
+  Do NOT use any tool that "root patches" macOS (OpenCore Legacy Patcher, OCLP-Mod,
+  kgp AirportItlwm-Tahoe): it rebuilds the driver collection that holds the Iris Xe
+  graphics and can remove the graphics driver at the next macOS update.
