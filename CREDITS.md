@@ -16,7 +16,7 @@ WhateverXe 0.8.2 and 0.8.3, AMFIAnchor 0.1.2 (and `AMFIAnchorInjector.kext` at t
 | WhateverXe (`WhateverXe-0.8.2.kext`, used by configs B and C) | 0.8.2 | https://github.com/b00t0x/WhateverXe |
 | WhateverXe test build (`WhateverXe-noccs.kext`, used only by the two `-noccs` test configs) | 0.8.3 + opt-in `-wex-noccs`, **not an official binary**. Upstream 0.8.3 plus a port of skmaiti2050's `-wex-noccs` patch (WhateverXe-TigerLakeH, branch `wex-0.8.2-noccs`; idea from [#163](https://github.com/b00t0x/WhateverXe/issues/163)). Built on 22 Nov 2026 by GitHub Actions ([run 45002111711](https://github.com/bharatvavdiya/WhateverXe/actions/runs/45002111711)) from commit `71e5c7c`. RELEASE executable SHA-256 `4e8b6d8c17049226db79fdf85ee35d6538aeede922bb186159baa2e27f5880a4`. A control build of unmodified 0.8.3 on the same CI matched the official binary except for its build-date stamp and Mach-O UUID | https://github.com/bharatvavdiya/WhateverXe (branch `wex-0.8.3-noccs`) |
 | AMFIAnchor + AMFIAnchorInjector | 0.1.2 / 1.0.0 | https://github.com/b00t0x/AMFIAnchor |
-| AMFIPass 1.4.1 Mod (used by config C only) | 1.4.1 | https://github.com/b00t0x/WhateverXe-Graphics (extras) |
+| AMFIPass 1.4.1 Mod (used by config C and `config-nvidia.plist`; covers Darwin 20-25, while the stock 1.4.1 stops at 24) | 1.4.1 | https://github.com/b00t0x/WhateverXe-Graphics (extras) |
 | VirtualSMC + SMCProcessor, SMCSuperIO, SMCBatteryManager, SMCLightSensor, SMCDellSensors | 1.3.9 | https://github.com/acidanthera/VirtualSMC |
 | RestrictEvents | 1.1.7 | https://github.com/acidanthera/RestrictEvents |
 | NVMeFix | 1.1.4 | https://github.com/acidanthera/NVMeFix |
@@ -41,5 +41,8 @@ from [`ACPI-source/SSDT-dGPU-Off.dsl`](ACPI-source/SSDT-dGPU-Off.dsl).
 
 - **WhateverXe Graphics** package (`WhateverXe-Graphics-0.4.4.pkg`), installed inside macOS:
   https://github.com/b00t0x/WhateverXe-Graphics/releases
-- Nothing from NullMoth / 1401 is included. Its NVIDIA driver needs settings (SIP `0xA43`, AMFI disabled)
-  that conflicted with Intel Iris Xe acceleration on this laptop.
+- **NullMoth NVIDIA driver 3.1** (`nullmoth-nvidia-3.1.tar.gz`, SHA-256
+  `e59b3183c53c9946fd123613bb06536a4a5c587120cb5383e62db6f1f672e4a1`), for the optional NVIDIA mode only:
+  https://github.com/nullmoth/nvidia-macos-driver/releases/tag/v3.1 (PolyForm Noncommercial; put it in
+  `G15-GUIDE/nvidia/` on the USB). Its settings (SIP `0xA43`, AMFI disabled) conflict with Intel Iris Xe
+  acceleration on this laptop, so it is installed only on the separate `NVIDIA` volume, never with the 1401 app.

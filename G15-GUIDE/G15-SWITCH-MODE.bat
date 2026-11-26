@@ -11,6 +11,7 @@ exit /b 1
 echo.
 echo  G15 5520 - choose the next macOS start mode
 echo  ------------------------------------------
+echo  BIOS: modes 1-8 need Hybrid Graphics ON, mode 9 needs it OFF (NVIDIA only).
 echo   1  MAINTENANCE in Safe Mode  - WhateverXe off, no add-on kexts (repairs)
 echo   2  MAINTENANCE normal        - WhateverXe off, slow but stable (use after a hang)
 echo   3  A  - WhateverXe 0.8.3 + AMFIAnchor (official method, RECOMMENDED)
@@ -19,10 +20,12 @@ echo   5  N  - WhateverXe 0.8.3 display only, no GPU acceleration (test)
 echo   6  C  - old Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod
 echo   7  TEST 7 - A with the CCS-off test build (PART 14 only, when Claude says so)
 echo   8  TEST 8 - D with the CCS-off test build (PART 14 only, when Claude says so)
+echo   9  NVIDIA - NVIDIA-only mode for the volume NVIDIA (PART 15; BIOS Hybrid OFF)
 echo   0  cancel
 echo.
-choice /c 123456780 /n /m "Type a number: "
-if errorlevel 9 goto cancel
+choice /c 1234567890 /n /m "Type a number: "
+if errorlevel 10 goto cancel
+if errorlevel 9 goto pick9
 if errorlevel 8 goto pick8
 if errorlevel 7 goto pick7
 if errorlevel 6 goto pick6
@@ -67,6 +70,11 @@ goto needkext
 set "SRC=config-accel-dgpuoff-noccs.plist"
 set "NAME=TEST 8 (D + CCS off test build)"
 goto needkext
+:pick9
+set "SRC=config-nvidia.plist"
+set "NAME=NVIDIA - before starting, set the BIOS to Hybrid Graphics OFF and choose the volume NVIDIA in OpenCore"
+if not exist "%OC%\Kexts\AMFIPass.kext\Contents\MacOS\AMFIPass" goto nokext
+goto docopy
 :needkext
 if not exist "%OC%\Kexts\WhateverXe-noccs.kext\Contents\MacOS\WhateverXe" goto nokext
 goto docopy
@@ -84,7 +92,7 @@ echo STOP: the copy failed - ask Claude.
 pause
 exit /b 1
 :nokext
-echo STOP: the CCS-off test kext EFI\OC\Kexts\WhateverXe-noccs.kext is missing. Nothing was changed - ask Claude.
+echo STOP: a kext this mode needs is missing in EFI\OC\Kexts. Nothing was changed - ask Claude.
 pause
 exit /b 1
 :notfound
