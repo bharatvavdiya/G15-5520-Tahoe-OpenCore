@@ -12,10 +12,10 @@ echo "Collecting information (1 to 3 minutes, please wait and do not use the lap
 {
   echo "=== G15 report $(date) ==="
   case " $(nvram boot-args 2>/dev/null) " in
+    *" nvfb=1 "*) echo "MODE: NVIDIA (NullMoth, WhateverXe off)";;
     *" -wexoff "*) echo "MODE: MAINTENANCE (WhateverXe off)";;
     *" -wex-noaccel "*) echo "MODE: N (WhateverXe display only)";;
     *" -wex-noccs "*) echo "MODE: ACCELERATED + CCS off (WhateverXe -wex-noccs test build)";;
-    *" nvfb=1 "*) echo "MODE: NVIDIA (NullMoth, WhateverXe off)";;
     *) echo "MODE: ACCELERATED (WhateverXe on)";;
   esac
   echo; echo "--- macOS version"; sw_vers
@@ -30,7 +30,7 @@ echo "Collecting information (1 to 3 minutes, please wait and do not use the lap
   echo; echo "--- WhateverXe Graphics package receipts"; pkgutil --pkgs | grep -i whateverxe
   echo; echo "--- /Library/Extensions"; ls -la /Library/Extensions
   echo; echo "--- /Library/GPUBundles"; ls -la /Library/GPUBundles 2>&1
-  echo; echo "--- NullMoth files (want: nothing listed on macintosh; on the NVIDIA volume NullMoth is expected)"
+  echo; echo "--- NullMoth files (want: nothing listed, unless you installed NullMoth for mode 9 in PART 15)"
   ls -d /Library/NullMoth /Library/GPUBundles/nvmtl /Library/GPUBundles/NVMTLDriver.bundle 2>/dev/null
   ls /Library/LaunchDaemons/com.nullmoth.* /Library/LaunchAgents/com.nullmoth.* /Users/*/Library/LaunchAgents/com.nullmoth.* 2>/dev/null
   launchctl print system 2>/dev/null | grep -i 'com\.nullmoth'

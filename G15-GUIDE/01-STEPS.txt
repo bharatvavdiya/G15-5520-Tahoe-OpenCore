@@ -42,7 +42,7 @@ Modes on this USB (switch with G15-SWITCH-MODE.bat in Windows, or 04/05 in macOS
   C                  old Nov 17 setup (did not start the GPU on 19 Nov)
   TEST 7 / TEST 8    A / D with a WhateverXe test build: GPU compute engine (CCS) off.
                      Only for PART 14, and only when Claude says so.
-  NVIDIA       (9)   NVIDIA-only: the second macOS "NVIDIA" with NullMoth 3.1 (PART 15).
+  NVIDIA       (9)   NVIDIA-only: your macOS with NullMoth 3.1 driving the RTX (PART 15).
                      BIOS graphics NVIDIA-only (Hybrid OFF); all other modes need Hybrid.
   MAINTENANCE        WhateverXe off. Slow, 7 MB, but stable.     <- NEXT START (PART 12)
                      (SAFE = also Safe Mode)
@@ -133,10 +133,12 @@ PART 14 - FIX TEST  (only when Claude says so, after the W report)
   for it. Do not use them before that.
 
 
-PART 15 - NVIDIA MODE  (an extra option; any time, it does not depend on PART 13)
-  What it is: the BIOS sends the screen to the RTX 3050 (graphics NVIDIA-only, Hybrid
-  OFF), and a second macOS called "NVIDIA" on the internal disk runs NullMoth's driver
-  3.1 on it (Metal 3). Your normal macOS ("macintosh") and modes 1-8 stay as they are.
+PART 15 - NVIDIA MODE  (an extra option on your normal macOS; does not depend on PART 13)
+  What it is: NullMoth's driver 3.1 is added to your macOS. In mode 9, with the BIOS
+  graphics set to NVIDIA-only, it drives the screen on the RTX 3050 (Metal 3). In the
+  Iris Xe modes (A, D, MAINTENANCE) the boot-arg -nvoff parks every NullMoth part, and
+  AMFI and SIP stay as they are; only mode 9 turns AMFI off and sets SIP 0xA43.
+  If it fails: step R removes NullMoth with the script that cleaned this Mac on 19 Nov.
   Honest limits (from NullMoth's own pages, 26 Nov):
   - RTX 30 laptops are still "validation pending" there. Another G15 5520 with the same
     RTX 3050 reported 3.0 working on an external monitor, on macOS 15 Sequoia; the
@@ -145,73 +147,65 @@ PART 15 - NVIDIA MODE  (an extra option; any time, it does not depend on PART 13
     (NullMoth #456, open), so it may not feel smoother than Iris Xe.
   - Brightness often does not change on such laptops in NVIDIA-only mode (known limit).
   - Battery drains faster (the RTX stays on). No sleep, as in all modes.
-  - NullMoth needs AMFI off and SIP 0xA43. Only the "NVIDIA" macOS gets them: mode 9
-    hides "macintosh" from its menu (step 9).
-  - Never use the 1401 app: it rewrites the OpenCore config on this USB.
-  Time: about 2-3 hours (17 GB download, then the install). Charger and Ethernet in. The
-  BIOS stays on Hybrid until step 11.
-  A. Prepare, in your normal macOS:
-  1. G15-SWITCH-MODE.bat -> 2 (MAINTENANCE). F12 -> USB -> OpenCore -> "macintosh".
-     Open Terminal and run (adds an empty volume "NVIDIA"; nothing is erased):
-         sudo bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh volume
-  2. Download macOS 26.7.3 from Apple (about 17 GB, never 27); it also checks the version:
-         sudo bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh installer
-  3. Run (without sudo; it checks, then opens Apple's installer):
-         bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh install
-     In the installer: Continue > Agree > Agree > "Show All Disks..." > select "NVIDIA"
-     (NOT "macintosh") > Continue > your password. The Mac restarts by itself several
-     times. At every OpenCore menu choose "macOS Installer", later "NVIDIA", never
-     "macintosh", until the setup screens appear.
-  B. Set up the NVIDIA macOS (still MAINTENANCE, BIOS still Hybrid):
-  4. Setup screens: language, a local user account. Skip Apple Account and iCloud for
-     now. Do not turn on FileVault. Then System Settings > Users & Groups > "Automatically
-     log in as" > your user (avoids the lock-screen crash some NVIDIA laptops had).
-  5. Open Terminal and run:
-         sudo bash /Volumes/1401/G15-GUIDE/06-test-mode.sh
-     System Settings > General > Software Update > (i) next to Automatic Updates: turn
-     off "Download new updates when available" and "Install macOS updates". System
-     Settings > Lock Screen: "Require password after screen saver..." -> Never.
-  6. Install the driver (the script refuses on "macintosh" and checks the package):
+  - On 19 Nov NullMoth plus its 1401 app broke Iris Xe on this Mac. This time there is
+    no 1401 app, no NullMoth Intel driver, and AMFI/SIP change only in mode 9 - but it
+    is still new, so step 6 must pass before step 7. Never use the 1401 app.
+  Charger and Ethernet in. The BIOS stays on Hybrid until step 7.
+  A. Install (MAINTENANCE, BIOS Hybrid):
+  1. In Windows: G15-SWITCH-MODE.bat -> 2. G15-CHECK-USB.cmd (click Yes): it must end with
+     "Next macOS start uses: MAINTENANCE normal".
+  2. F12 -> USB -> OpenCore -> your macOS disk. Log in, open only Terminal, and run:
          sudo bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh nullmoth
-     It downloads NVIDIA's firmware (about 550 MB). When it says DONE: Apple menu >
-     Restart, choose "NVIDIA". Then System Settings > Privacy & Security: if an "Allow"
-     button for the new extensions is shown, click it and restart once more ("NVIDIA").
-  7. Run:
+     It saves a before-report, checks the package and runs NullMoth's own installer (it
+     downloads NVIDIA's firmware, about 550 MB). Its notes about missing boot-args are
+     expected.
+  3. When it says DONE: Apple menu > Restart (MAINTENANCE again). Then System Settings >
+     Privacy & Security: if an "Allow" button for the new extensions is shown, click it
+     and restart once more.
+  4. Run:
          bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh check
-     Want "READY for the NVIDIA start: yes" (the driver stays off in MAINTENANCE; that
-     is normal). If it says NO: Privacy & Security > Allow, restart, check again; still
-     NO: stop and tell Claude "NV not ready".
-  8. Still in "NVIDIA": System Settings > General > Startup Disk > select "macintosh" >
-     Restart. At the OpenCore menu choose "macintosh" (MAINTENANCE).
-  9. In "macintosh" run (hides "macintosh" only from mode 9's menu, so NVIDIA mode can
-     never start your normal macOS; all other modes still show it):
-         sudo bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh hide
-     Apple menu > Shut Down.
+     Want "READY for the NVIDIA start: yes". If NO: Allow, restart, check again; still NO:
+     stop and tell Claude "NV not ready".
+  5. System Settings > Users & Groups > "Automatically log in as" > your user, and Lock
+     Screen > "Require password after screen saver..." > Never (avoids the lock-screen
+     crash some NVIDIA laptops had; you can undo both later). Apple menu > Shut Down.
+  B. Iris Xe must still work (must pass before step 7):
+  6. In Windows: G15-SWITCH-MODE.bat -> 3 (A), G15-CHECK-USB.cmd -> "...uses: A". Start
+     macOS, run:
+         sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
+         bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh check
+     Want: Metal 2, 1536 MB, 120 Hz, and no NullMoth kexts running. Use it 10 minutes.
+     If anything is worse than before (7 MB, a hang, black screen): go to step R and tell
+     Claude "NV broke A". Otherwise Apple menu > Shut Down.
   C. First NVIDIA start:
-  10. In Windows: G15-SWITCH-MODE.bat -> 9 (NVIDIA). G15-CHECK-USB.cmd (click Yes): it
-     must end with "Next macOS start uses: NVIDIA (...)". If Windows uses BitLocker or
-     device encryption, have the recovery key ready first (a BIOS change can ask for it).
-  11. Restart, press F2 for the BIOS and set graphics to NVIDIA-only (Hybrid OFF, the
-     setting you set to Hybrid for Iris Xe). Save. F12 -> USB -> OpenCore: the menu waits
-     in this mode; choose "NVIDIA". The first start can stop for 1-3 minutes at "PCI
-     configuration end": wait; hold the power button only after 5 minutes.
-  12. Log in. Open Terminal and run both:
+  7. In Windows: G15-SWITCH-MODE.bat -> 9 (NVIDIA). G15-CHECK-USB.cmd: it must end with
+     "Next macOS start uses: NVIDIA (...)". If Windows uses BitLocker or device
+     encryption, have the recovery key ready first (a BIOS change can ask for it).
+     Restart, press F2 for the BIOS and set graphics to NVIDIA-only (Hybrid OFF). Save.
+     F12 -> USB -> OpenCore: the menu waits in this mode; choose your macOS disk. The first
+     start can stop for 1-3 minutes at "PCI configuration end": wait; hold the power
+     button only after 5 minutes.
+  8. Log in. Open Terminal and run both:
          bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh check
          sudo bash /Volumes/1401/G15-GUIDE/02-check.sh
-     Want: "MODE: NVIDIA", the NullMoth kexts loaded (NVRM, NVAccel, NVRMFB, NVRMAGDC,
-     usually NMXAudio too), "Chipset Model: NVIDIA GeForce RTX 3050" and Metal 3 (or
-     newer). Try the brightness keys (no change = the known limit). Use it 15 minutes.
+     Want: "MODE: NVIDIA", NullMoth kexts running (NVRM, NVAccel, NVRMFB, NVRMAGDC,
+     usually NMXAudio), "Chipset Model: NVIDIA GeForce RTX 3050" and Metal 3 (or newer).
+     Try the brightness keys (no change = the known limit). Use it 15 minutes.
      Apple menu > Shut Down, start Windows and tell Claude: "NV report".
   If the screen stays black or the Mac restarts in a loop (NullMoth's own guard also
   turns its driver off after two failed starts):
   - Hold the power button. In the BIOS set graphics to Hybrid again. In Windows run
     G15-CHECK-USB.cmd (click Yes) and G15-SWITCH-MODE.bat -> 2 (MAINTENANCE).
-  - Start "NVIDIA" (in MAINTENANCE) first and run, before anything else:
+  - Start macOS and run, before anything else:
          sudo bash /Volumes/1401/G15-GUIDE/08-freeze-logs.sh 24
     Then tell Claude "NV black".
-  BACK TO IRIS XE (any time): BIOS graphics -> Hybrid, G15-SWITCH-MODE.bat -> 3 (or 2),
-  choose "macintosh". The Mac installer and Recovery need a Hybrid mode too (they show
-  nothing in mode 9).
+  SWITCHING: Iris Xe = BIOS Hybrid + mode 3 (or 2). NVIDIA = BIOS NVIDIA-only + mode 9.
+  The Mac installer and Recovery need Hybrid and an Iris Xe mode (they show nothing in 9).
+  R. REMOVE NULLMOTH (back to Iris Xe only, any time): BIOS Hybrid, G15-SWITCH-MODE.bat
+     -> 2, start macOS, run:
+         sudo bash /Volumes/1401/G15-GUIDE/15-nvidia-lab.sh remove
+     Follow what it prints (it may ask for a restart and a second run). Then mode 3 and
+     02-check: want Metal 2 and 1536 MB again.
 
 
 PART 5 - TEST D AGAIN  (when Claude says so, after the W report: RTX 3050 hidden in macOS)
@@ -321,8 +315,8 @@ WHAT THIS LAPTOP CAN AND CANNOT DO IN macOS (checked against Apple and WhateverX
   - RTX 3050: Apple has no driver for RTX 20/30/40 cards. In the Iris Xe modes it is
     unused (mode D hides it; PART 5 step 4 plus the same check in A shows whether it is
     also powered off), so HDMI, which is wired to it, gives no picture there. The
-    community driver NullMoth can run it in NVIDIA mode (PART 15, a second macOS with
-    AMFI off). It keeps working fully in Windows.
+    community driver NullMoth can run it in NVIDIA mode (PART 15; AMFI is off only in
+    that mode). It keeps working fully in Windows.
   - CPU: all 12 cores run with Apple's power management. Hyper-Threading stays off: with
     it on, this exact CPU is reported to hang at start, and it gives no speed-up for the UI.
   - Speakers: macOS 26 removed the Apple audio driver that AppleALC needs, so the built-in
@@ -338,8 +332,8 @@ DO NOT
   - No Apple menu > Lock Screen and no Control-Command-Q: they start the screen saver.
   - No Photos app, no Live Text on pictures (GPU hang triggers reported on Iris Xe).
   - No cleaner apps, no icon-cache tricks, no Safe Mode "to clear caches".
-  - Never open the 1401 app. Do not install anything from NullMoth or AppleALC on
-    "macintosh"; NullMoth goes only on "NVIDIA", only with 15-nvidia-lab.sh (PART 15).
+  - Never open the 1401 app. Install NullMoth only with 15-nvidia-lab.sh (PART 15), and
+    nothing from AppleALC.
   - Do not Reset NVRAM, do not install macOS updates, never macOS 27.
 
 

@@ -329,6 +329,7 @@ fi
   [ -n "$BA" ] || BA=$(nvram boot-args 2>/dev/null | cut -f2-)
   SAFE=$(sysctl -n kern.safeboot 2>/dev/null)
   case " $BA " in
+    *" nvfb=1 "*) MODE="NVIDIA (NullMoth)";;
     *" -wexoff "*) MODE="MAINTENANCE (WhateverXe off)";;
     *" -wex-noaccel "*) MODE="N (WhateverXe display only)";;
     *) MODE="ACCELERATED (WhateverXe on)";;

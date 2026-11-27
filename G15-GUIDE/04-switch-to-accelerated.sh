@@ -8,7 +8,7 @@
 #   bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh B    -> B: WhateverXe 0.8.2 + AMFIAnchor
 #   bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh AC   -> TEST 7: A with the CCS-off test build (PART 14 only, when Claude says so)
 #   bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh DC   -> TEST 8: D with the CCS-off test build (PART 14 only, when Claude says so)
-#   bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh NV   -> NVIDIA: NVIDIA-only mode for the volume NVIDIA (PART 15; BIOS Hybrid OFF)
+#   bash /Volumes/1401/G15-GUIDE/04-switch-to-accelerated.sh NV   -> NVIDIA: NVIDIA-only mode with NullMoth (PART 15; BIOS Hybrid OFF)
 # Note (19 Nov): on the cleaned macOS, 0.8.2 (C) did not start the Intel GPU; 0.8.3 (A) did.
 OC="$(cd "$(dirname "$0")/.." && pwd)/EFI/OC"
 case "${1:-A}" in
@@ -19,7 +19,7 @@ case "${1:-A}" in
   B|b) SRC=config-accel-082.plist;     NAME="B (WhateverXe 0.8.2 + AMFIAnchor)";;
   AC|ac) SRC=config-accel-noccs.plist;         NAME="TEST 7 (A + CCS off test build)";;
   DC|dc) SRC=config-accel-dgpuoff-noccs.plist; NAME="TEST 8 (D + CCS off test build)";;
-  NV|nv) SRC=config-nvidia.plist; NAME="NVIDIA (set the BIOS to Hybrid Graphics OFF, then choose the volume NVIDIA)";;
+  NV|nv) SRC=config-nvidia.plist; NAME="NVIDIA (set the BIOS to Hybrid Graphics OFF before starting)";;
   *) echo "STOP: use A, D, N, C, B, AC, DC or NV. Nothing was changed."; exit 1;;
 esac
 [ -f "$OC/$SRC" ] || { echo "STOP: $OC/$SRC not found. Nothing was changed."; exit 1; }

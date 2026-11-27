@@ -18,7 +18,7 @@ case "$(pmset -g batt 2>/dev/null | head -n 1)" in
 esac
 mkdir -p "$DIR/reports" || { echo "STOP: cannot write $DIR/reports"; exit 1; }
 OUT="$DIR/reports/power-$(date +%Y%m%d-%H%M%S).txt"
-case " $(sysctl -n kern.bootargs 2>/dev/null) " in *" -wexoff "*) M="MAINTENANCE";; *) M="ACCELERATED";; esac
+case " $(sysctl -n kern.bootargs 2>/dev/null) " in *" nvfb=1 "*) M="NVIDIA";; *" -wexoff "*) M="MAINTENANCE";; *) M="ACCELERATED";; esac
 NV=$(ioreg -l -w0 2>/dev/null | grep -c '"vendor-id" = <de100000>')
 # ioreg can print a negative battery current as an unsigned 16-, 32- or 64-bit number: return its size in mA
 mag() { echo "a=$1; m=a; if (a >= 2^15) { if (a < 2^16) m = 2^16 - a }; if (a >= 2^31) { if (a < 2^32) m = 2^32 - a }; if (a >= 2^63) m = 2^64 - a; m" | bc 2>/dev/null; }

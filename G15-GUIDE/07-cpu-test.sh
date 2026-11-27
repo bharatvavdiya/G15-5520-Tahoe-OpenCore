@@ -11,7 +11,7 @@ BA=$(sysctl -n kern.bootargs 2>/dev/null)
   echo "CPU test start $(date)"
   sysctl hw.logicalcpu hw.physicalcpu machdep.cpu.core_count machdep.cpu.thread_count machdep.xcpm.mode 2>/dev/null
   case " $BA " in *" ctrsmt=full "*) echo "CPU topology kext: ON";; *) echo "CPU topology kext: OFF (noctr config)";; esac
-  case " $BA " in *" -wexoff "*) echo "mode: MAINTENANCE";; *" -wex-noaccel "*) echo "mode: N";; *) echo "mode: ACCELERATED (WhateverXe on)";; esac
+  case " $BA " in *" nvfb=1 "*) echo "mode: NVIDIA (NullMoth)";; *" -wexoff "*) echo "mode: MAINTENANCE";; *" -wex-noaccel "*) echo "mode: N";; *) echo "mode: ACCELERATED (WhateverXe on)";; esac
   echo "boot-args: $BA"
 } > "$LOG"; sync
 echo "Starting $N load processes for 10 minutes."

@@ -20,7 +20,7 @@ echo   5  N  - WhateverXe 0.8.3 display only, no GPU acceleration (test)
 echo   6  C  - old Nov 17 setup: WhateverXe 0.8.2 + AMFIPass Mod
 echo   7  TEST 7 - A with the CCS-off test build (PART 14 only, when Claude says so)
 echo   8  TEST 8 - D with the CCS-off test build (PART 14 only, when Claude says so)
-echo   9  NVIDIA - NVIDIA-only mode for the volume NVIDIA (PART 15; BIOS Hybrid OFF)
+echo   9  NVIDIA - NVIDIA-only mode with NullMoth (PART 15; BIOS Hybrid OFF)
 echo   0  cancel
 echo.
 choice /c 1234567890 /n /m "Type a number: "
@@ -72,7 +72,7 @@ set "NAME=TEST 8 (D + CCS off test build)"
 goto needkext
 :pick9
 set "SRC=config-nvidia.plist"
-set "NAME=NVIDIA - before starting, set the BIOS to Hybrid Graphics OFF and choose the volume NVIDIA in OpenCore"
+set "NAME=NVIDIA - before starting, set the BIOS to Hybrid Graphics OFF (NVIDIA-only)"
 if not exist "%OC%\Kexts\AMFIPass.kext\Contents\MacOS\AMFIPass" goto nokext
 goto docopy
 :needkext

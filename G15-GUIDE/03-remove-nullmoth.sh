@@ -28,6 +28,7 @@ RERUN=0
 echo "macOS $VER   report folder: $OUT"
 [ "$(sysctl -n kern.safeboot 2>/dev/null)" = 1 ] && echo "Safe Mode: yes"
 case " $(nvram boot-args 2>/dev/null | cut -f2-) " in
+  *" nvfb=1 "*) echo "NOTE: this is NVIDIA mode. Better: BIOS Hybrid, G15-SWITCH-MODE.bat -> 2, then run this again.";;
   *" -wexoff "*) echo "Mode: MAINTENANCE (good)";;
   *) echo "NOTE: not in maintenance mode. Close all other apps before continuing.";;
 esac

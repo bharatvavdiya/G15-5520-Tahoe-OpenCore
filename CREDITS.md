@@ -45,4 +45,4 @@ from [`ACPI-source/SSDT-dGPU-Off.dsl`](ACPI-source/SSDT-dGPU-Off.dsl).
   `e59b3183c53c9946fd123613bb06536a4a5c587120cb5383e62db6f1f672e4a1`), for the optional NVIDIA mode only:
   https://github.com/nullmoth/nvidia-macos-driver/releases/tag/v3.1 (PolyForm Noncommercial; put it in
   `G15-GUIDE/nvidia/` on the USB). Its settings (SIP `0xA43`, AMFI disabled) conflict with Intel Iris Xe
-  acceleration on this laptop, so it is installed only on the separate `NVIDIA` volume, never with the 1401 app.
+  acceleration on this laptop, so only mode 9 sets them; it is installed with `15-nvidia-lab.sh`, never with the 1401 app.

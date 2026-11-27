@@ -2383,7 +2383,7 @@
 				<key>Comment</key>
 				<string>WhateverXe 0.8.3 (official RELEASE)</string>
 				<key>Enabled</key>
-				<false/>
+				<true/>
 				<key>ExecutablePath</key>
 				<string>Contents/MacOS/WhateverXe</string>
 				<key>MaxKernel</key>
@@ -3262,7 +3262,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-v keepsyms=1 -vi2c-force-polling -ibtcompatbeta nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0</string>
+				<string>-v keepsyms=1 -vi2c-force-polling -ibtcompatbeta -wexoff nvfb=1 nvaccel=1 nvfbheads=4 -nvkmsnosmooth amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0</string>
 				<key>csr-active-config</key>
 				<data>
 				QwoAAA==
